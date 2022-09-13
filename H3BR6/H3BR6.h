@@ -251,6 +251,7 @@ extern const CLI_Command_Definition_t CLI_SevenDisplayMovingSentanceCommandDefin
 extern const CLI_Command_Definition_t CLI_SevenDisplayOffCommandDefinition;
 
 
+
 #endif /* H3BR6_H */
 
 /************************ (C) COPYRIGHT HEXABITZ *****END OF FILE****/

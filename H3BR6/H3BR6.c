@@ -99,18 +99,18 @@ const CLI_Command_Definition_t CLI_SevenDisplayLetterCommandDefinition =
 const CLI_Command_Definition_t CLI_SevenDisplaySentenceCommandDefinition =
 {
 	( const int8_t * ) "seven_display_sentence", /* The command string to type. */
-	( const int8_t * ) "seven_display_sentence:\r\nParameters required to execute a SevenDisplaySentance:  Length, StartSevseg, Sentence \r\n\r\n",
+	( const int8_t * ) "seven_display_sentence:\r\nParameters required to execute a SevenDisplaySentance:  StartSevseg, Sentence \r\n\r\n",
 	CLI_SevenDisplaySentenceCommand, /* The function to run. */
-	3 /* three parameters are expected. */
+	2 /* two parameters are expected. */
 };
 
 /* CLI command structure : SevenDisplayMovingSentance */
 const CLI_Command_Definition_t CLI_SevenDisplayMovingSentenceCommandDefinition =
 {
 	( const int8_t * ) "seven_display_moving_sentence", /* The command string to type. */
-	( const int8_t * ) "seven_display_moving_sentence:\r\nParameters required to execute a SevenDisplayMovingSentence:  Length, Sentence \r\n\r\n",
+	( const int8_t * ) "seven_display_moving_sentence:\r\nParameters required to execute a SevenDisplayMovingSentence: Sentence \r\n\r\n",
 	CLI_SevenDisplayMovingSentenceCommand, /* The function to run. */
-	2 /* two parameters are expected. */
+	1 /* one parameters are expected. */
 };
 
 /* CLI command structure : SevenDisplayOff */
@@ -121,6 +121,7 @@ const CLI_Command_Definition_t CLI_SevenDisplayOffCommandDefinition =
 	CLI_SevenDisplayOffCommand, /* The function to run. */
 	0 /* zero parameters are expected. */
 };
+
 
 
 /*-----------------------------------------------------------*/
@@ -500,6 +501,7 @@ void RegisterModuleCLICommands(void){
 		FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplaySentenceCommandDefinition);
 		FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplayMovingSentenceCommandDefinition);
 		FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplayOffCommandDefinition);
+
 
 
 }
@@ -1614,15 +1616,13 @@ portBASE_TYPE CLI_SevenDisplaySentenceCommand( int8_t *pcWriteBuffer, size_t xWr
 	char* Sentence = NULL;
 //	const int8_t* ptr;
 	uint8_t StartSevSeg;
-	uint16_t length;
+
 
 	static int8_t *pcParameterString1;
 	static int8_t *pcParameterString2;
-	static int8_t *pcParameterString3;
 
 	portBASE_TYPE xParameterStringLength1 =0;
 	portBASE_TYPE xParameterStringLength2 =0;
-	portBASE_TYPE xParameterStringLength3 =0;
 
 
 	static const int8_t *pcOKMessage=(int8_t* )"SevenSegmentDisplay is on:\r\n %s \n\r";
@@ -1646,7 +1646,7 @@ portBASE_TYPE CLI_SevenDisplaySentenceCommand( int8_t *pcWriteBuffer, size_t xWr
 	 pcParameterString2 =(int8_t* )FreeRTOS_CLIGetParameter(pcCommandString, 2, &xParameterStringLength2 );
 	 Sentence =(char* )pcParameterString2;
 
-	 length=xParameterStringLength2;
+
 //	 ptr = pcCommandString;
 //	 for (int i=0;i< 25 + xParameterStringLength1 + xParameterStringLength2;i++) ptr++;
 //	 int i =0;
@@ -1657,7 +1657,7 @@ portBASE_TYPE CLI_SevenDisplaySentenceCommand( int8_t *pcWriteBuffer, size_t xWr
 //		 ptr++;
 //	 }
 
-	 status=SevenDisplaySentence(Sentence, length, StartSevSeg);
+	 status=SevenDisplaySentence(Sentence, xParameterStringLength2, StartSevSeg);
 
 
 	 if(status == H3BR6_OK)
@@ -1685,10 +1685,8 @@ portBASE_TYPE CLI_SevenDisplayMovingSentenceCommand( int8_t *pcWriteBuffer, size
 	uint16_t length;
 
 	static int8_t *pcParameterString1;
-	static int8_t *pcParameterString2;
 
 	portBASE_TYPE xParameterStringLength1 =0;
-	portBASE_TYPE xParameterStringLength2 =0;
 
 
 	static const int8_t *pcOKMessage=(int8_t* )"SevenSegmentDisplay is on:\r\n %s \n\r";
@@ -1702,12 +1700,12 @@ portBASE_TYPE CLI_SevenDisplayMovingSentenceCommand( int8_t *pcWriteBuffer, size
 
 
 
+//	 pcParameterString1 =(char *)FreeRTOS_CLIGetParameter(pcCommandString, 1, &xParameterStringLength1 );
+//	 length =(uint16_t )atol((char* )pcParameterString1);
+
+
 	 pcParameterString1 =(char *)FreeRTOS_CLIGetParameter(pcCommandString, 1, &xParameterStringLength1 );
-	 length =(uint16_t )atol((char* )pcParameterString1);
-
-
-	 pcParameterString2 =(char *)FreeRTOS_CLIGetParameter(pcCommandString, 2, &xParameterStringLength2 );
-	 Sentence = (char* )pcParameterString2;
+	 Sentence = (char* )pcParameterString1;
 
 
 //	 ptr = pcCommandString;
@@ -1720,7 +1718,7 @@ portBASE_TYPE CLI_SevenDisplayMovingSentenceCommand( int8_t *pcWriteBuffer, size
 //		 ptr++;
 //	 }
 
-	 status=SevenDisplayMovingSentence(Sentence, length);
+	 status=SevenDisplayMovingSentence(Sentence, xParameterStringLength1);
 
 
 	 if(status == H3BR6_OK)
@@ -1763,8 +1761,6 @@ portBASE_TYPE CLI_SevenDisplayOffCommand( int8_t *pcWriteBuffer, size_t xWriteBu
 
 	return pdFALSE;
 
-}
-
-/*-----------------------------------------------------------*/
+}/*-----------------------------------------------------------*/
 
 /************************ (C) COPYRIGHT HEXABITZ *****END OF FILE****/
