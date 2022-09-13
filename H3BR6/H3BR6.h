@@ -229,6 +229,12 @@ extern void ExecuteMonitor(void);
 /* -----------------------------------------------------------------------
  */
 extern Module_Status SevenDisplayNumber(int32_t Number, uint8_t StartSevSeg);
+extern Module_Status SevenDisplayNumberF(float NumberF,uint8_t Res,uint8_t StartSevSeg);
+extern Module_Status SevenDisplayQuantities(float NumberF, uint8_t Res,char Unit ,uint8_t StartSevSeg);
+extern Module_Status SevenDisplayLetter(char letter , uint8_t StartSevSeg);
+extern Module_Status SevenDisplaySentence(char *Sentance,uint16_t length,uint8_t StartSevSeg);
+extern Module_Status SevenDisplayMovingSentence(char *Sentance,uint16_t length);
+extern Module_Status SevenDisplayOff(void);
 void SetupPortForRemoteBootloaderUpdate(uint8_t port);
 void remoteBootloaderUpdate(uint8_t src,uint8_t dst,uint8_t inport,uint8_t outport);
 
@@ -236,6 +242,13 @@ void remoteBootloaderUpdate(uint8_t src,uint8_t dst,uint8_t inport,uint8_t outpo
  |								Commands							      |															 	|
 /* -----------------------------------------------------------------------
  */
+extern const CLI_Command_Definition_t CLI_SevenDisplayNumberCommandCommandDefinition;
+extern const CLI_Command_Definition_t CLI_SevenDisplayNumberFCommandDefinition;
+extern const CLI_Command_Definition_t CLI_SevenDisplayQuantitiesCommandDefinition;
+extern const CLI_Command_Definition_t CLI_SevenDisplayLetterCommandDefinition;
+extern const CLI_Command_Definition_t CLI_SevenDisplaySentanceCommandDefinition;
+extern const CLI_Command_Definition_t CLI_SevenDisplayMovingSentanceCommandDefinition;
+extern const CLI_Command_Definition_t CLI_SevenDisplayOffCommandDefinition;
 
 
 #endif /* H3BR6_H */
