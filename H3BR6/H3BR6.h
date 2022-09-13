@@ -31,7 +31,7 @@
 
 
 /* Port-related definitions */
-#define	NumOfPorts			6
+#define	NumOfPorts			5
 
 #define P_PROG 				P2						/* ST factory bootloader UART */
 
@@ -41,25 +41,23 @@
 #define _P3 
 #define _P4 
 #define _P5 
-#define _P6
+
 
 /* Define available USARTs */
 #define _Usart1 1
 #define _Usart2 1
 #define _Usart3 1
-#define _Usart4 1
 #define _Usart5 1
 #define _Usart6	1
 
 
 /* Port-UART mapping */
 
-#define P1uart &huart4
+#define P1uart &huart6
 #define P2uart &huart2
 #define P3uart &huart3
 #define P4uart &huart1
 #define P5uart &huart5
-#define P6uart &huart6
 
 
 /* Port Definitions */
@@ -81,11 +79,7 @@
 #define	USART3_RX_PORT		GPIOB
 #define	USART3_AF			GPIO_AF4_USART3
 
-#define	USART4_TX_PIN		GPIO_PIN_0
-#define	USART4_RX_PIN		GPIO_PIN_1
-#define	USART4_TX_PORT		GPIOA
-#define	USART4_RX_PORT		GPIOA
-#define	USART4_AF			GPIO_AF4_USART4
+
 
 #define	USART5_TX_PIN		GPIO_PIN_3
 #define	USART5_RX_PIN		GPIO_PIN_2
@@ -118,13 +112,12 @@ typedef enum {
 
 /* Indicator LED */
 #define _IND_LED_PORT			GPIOB
-#define _IND_LED_PIN			GPIO_PIN_14
+#define _IND_LED_PIN			GPIO_PIN_7
 
 /* Export UART variables */
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
-extern UART_HandleTypeDef huart4;
 extern UART_HandleTypeDef huart5;
 extern UART_HandleTypeDef huart6;
 
@@ -132,7 +125,6 @@ extern UART_HandleTypeDef huart6;
 extern void MX_USART1_UART_Init(void);
 extern void MX_USART2_UART_Init(void);
 extern void MX_USART3_UART_Init(void);
-extern void MX_USART4_UART_Init(void);
 extern void MX_USART5_UART_Init(void);
 extern void MX_USART6_UART_Init(void);
 extern void SystemClock_Config(void);
