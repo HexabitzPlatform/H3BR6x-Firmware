@@ -306,6 +306,12 @@ void Module_Peripheral_Init(void){
 	MX_USART5_UART_Init();
 	MX_USART6_UART_Init();
 
+	//Init a timer for 7-seg:
+	MX_TIM6_Init();
+
+		//seven segment GPIO Init:
+	seven_seg_gpio_init();
+
 
 	/* Create module special task (if needed) */
 }

@@ -14,11 +14,10 @@ uint8_t temp_length[NumOfPorts] = {0};
 uint8_t temp_index[NumOfPorts] = {0};
 uint8_t* error_restart_message = "Restarting...\r\n";
 
-
 /* External variables --------------------------------------------------------*/
 extern uint8_t UARTRxBuf[NumOfPorts][MSG_RX_BUF_SIZE];
 extern uint8_t UARTRxBufIndex[NumOfPorts];
-
+extern TIM_HandleTypeDef htim6; /* Timer for 7-segment (6 peices) */
 /* External function prototypes ----------------------------------------------*/
 
 extern TaskHandle_t xCommandConsoleTaskHandle; // CLI Task handler.
@@ -37,6 +36,103 @@ void SysTick_Handler(void){
 	osSystickHandler();
 	
 }
+
+void TIM6_DAC_LPTIM1_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM6_DAC_LPTIM1_IRQn 0 */
+
+  /* USER CODE END TIM6_DAC_LPTIM1_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim6);
+  /* USER CODE BEGIN TIM6_DAC_LPTIM1_IRQn 1 */
+
+  /* USER CODE END TIM6_DAC_LPTIM1_IRQn 1 */
+}
+
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if(htim == &htim6)
+	{
+
+		index_7_seg++;
+		if(index_7_seg > 5) index_7_seg = 0;
+
+		HAL_GPIO_WritePin(Seven_seg_a_GPIO_Port, Seven_seg_a_Pin, 	Digit[index_7_seg] & 0b00000001);
+		HAL_GPIO_WritePin(Seven_seg_b_GPIO_Port, Seven_seg_b_Pin, 	Digit[index_7_seg] & 0b00000010);
+		HAL_GPIO_WritePin(Seven_seg_c_GPIO_Port, Seven_seg_c_Pin, 	Digit[index_7_seg] & 0b00000100);
+		HAL_GPIO_WritePin(Seven_seg_d_GPIO_Port, Seven_seg_d_Pin, 	Digit[index_7_seg] & 0b00001000);
+		HAL_GPIO_WritePin(Seven_seg_e_GPIO_Port, Seven_seg_e_Pin, 	Digit[index_7_seg] & 0b00010000);
+		HAL_GPIO_WritePin(Seven_seg_f_GPIO_Port, Seven_seg_f_Pin, 	Digit[index_7_seg] & 0b00100000);
+		HAL_GPIO_WritePin(Seven_seg_g_GPIO_Port, Seven_seg_g_Pin, 	Digit[index_7_seg] & 0b01000000);
+		HAL_GPIO_WritePin(Seven_seg_DP_GPIO_Port, Seven_seg_DP_Pin, 0);
+if(index_7_seg==StartSevSeg_it+Res_it && Comma_flag==1){HAL_GPIO_WritePin(Seven_seg_DP_GPIO_Port, Seven_seg_DP_Pin, 1);}
+
+		HAL_GPIO_WritePin(Seven_seg_Enable_1_GPIO_Port, Seven_seg_Enable_1_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(Seven_seg_Enable_2_GPIO_Port, Seven_seg_Enable_2_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(Seven_seg_Enable_3_GPIO_Port, Seven_seg_Enable_3_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(Seven_seg_Enable_4_GPIO_Port, Seven_seg_Enable_4_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(Seven_seg_Enable_5_GPIO_Port, Seven_seg_Enable_5_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(Seven_seg_Enable_6_GPIO_Port, Seven_seg_Enable_6_Pin, GPIO_PIN_SET);
+
+		switch(index_7_seg)
+		{
+			case 0:
+				HAL_GPIO_WritePin(Seven_seg_Enable_1_GPIO_Port, Seven_seg_Enable_1_Pin, GPIO_PIN_RESET);
+				break;
+
+			case 1:
+				HAL_GPIO_WritePin(Seven_seg_Enable_2_GPIO_Port, Seven_seg_Enable_2_Pin, GPIO_PIN_RESET);
+				break;
+
+			case 2:
+				HAL_GPIO_WritePin(Seven_seg_Enable_3_GPIO_Port, Seven_seg_Enable_3_Pin, GPIO_PIN_RESET);
+				break;
+
+			case 3:
+				HAL_GPIO_WritePin(Seven_seg_Enable_4_GPIO_Port, Seven_seg_Enable_4_Pin, GPIO_PIN_RESET);
+				break;
+
+			case 4:
+				HAL_GPIO_WritePin(Seven_seg_Enable_5_GPIO_Port, Seven_seg_Enable_5_Pin, GPIO_PIN_RESET);
+				break;
+
+			case 5:
+				HAL_GPIO_WritePin(Seven_seg_Enable_6_GPIO_Port, Seven_seg_Enable_6_Pin, GPIO_PIN_RESET);
+				break;
+
+			default:
+				break;
+
+		}
+
+
+	// Processing Moving sentence:
+		if(Moving_sentence_flag == 1)
+		{
+
+			Moving_sentence_counter++;
+			if(Moving_sentence_counter == MOVING_SENTENCE_COUNTER_OVERFLOW)
+			{
+				Moving_sentence_counter = 0;
+				uint8_t temp;
+				for(int i=0;i<6;i++)
+				{
+					temp = Moving_sentence_index + i;
+					if(temp == Moving_sentence_length)
+					{
+						temp -= Moving_sentence_length;
+					}
+					Digit[5 - i] = Moving_sentence_buffer[temp];
+				}
+				Moving_sentence_index++;
+				if(Moving_sentence_index == Moving_sentence_length)
+				{
+					Moving_sentence_index = 0;
+				}
+
+			}
+
+		}
 
 /**
  * @brief This function handles Hard Fault error callback.
