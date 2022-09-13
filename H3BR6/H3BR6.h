@@ -127,11 +127,11 @@
 #define Seven_seg_Enable_1_Pin 			GPIO_PIN_12
 #define Seven_seg_Enable_1_GPIO_Port 	GPIOB
 
-#define Seven_seg_Enable_2_Pin 			GPIO_PIN_13
-#define Seven_seg_Enable_2_GPIO_Port 	GPIOB
+#define Seven_seg_Enable_2_Pin 			GPIO_PIN_11
+#define Seven_seg_Enable_2_GPIO_Port 	GPIOA
 
-#define Seven_seg_Enable_3_Pin 			GPIO_PIN_11
-#define Seven_seg_Enable_3_GPIO_Port 	GPIOA
+#define Seven_seg_Enable_3_Pin 			GPIO_PIN_13
+#define Seven_seg_Enable_3_GPIO_Port 	GPIOB
 
 #define Seven_seg_Enable_4_Pin 			GPIO_PIN_8
 #define Seven_seg_Enable_4_GPIO_Port 	GPIOA
@@ -150,13 +150,59 @@
 // Module Addressing Space 500 - 599
 #define _EE_MODULE							500		
 
-/* Module_Status Type Definition */
+//* Module_Status Type Definition */
 typedef enum {
 	H3BR6_OK =0,
 	H3BR6_ERR_UnknownMessage,
 	H3BR6_ERR_WrongParams,
+	H3BR6_NUMBER_IS_OUT_OF_RANGE, // Longer than 6 Digits
+	H3BR6_Out_Of_Range,
 	H3BR6_ERROR =255
 } Module_Status;
+
+
+typedef enum{
+	zero_number=0x3f, one_number=0x06, two_number=0x5b, three_number=0x4f, four_number=0x66, five_number=0x6d, six_number=0x7d, seven_number=0x07, eight_number=0x7f ,nine_number=0x6f,
+
+	a_letter=0x5f, b_letter=0x7C, c_letter=0x58, d_letter=0x5E, e_letter=0x79, f_letter=0x71, g_letter=0x6f, h_letter=0x74, i_letter=0x10, j_letter=0x1E,k_letter=0x75,
+
+	l_letter=0x38  , m_letter=0x37,n_letter=0x54, o_letter=0x5C, p_letter=0x73, q_letter=0x67, r_letter=0x50, s_letter=0x6c, t_letter=0x78, u_letter=0x1c,
+
+	v_letter=0x3e, w_letter=0x7e ,x_letter=0x76,y_letter=0x6E, z_letter=0x1B,
+
+	A_letter=0x77, B_letter=0x7C , C_letter=0x39 , D_letter=0x5E, E_letter=0x79 , F_letter=0x71 , G_letter=0x3d , H_letter=0x74, I_letter=0x10 , J_letter=0x1E ,K_letter=0x75,
+
+	L_letter=0x38  , M_letter=0x37,N_letter=0x54 , O_letter=0x5C , P_letter=0x73 ,  Q_letter=0x67 , R_letter=0x50,  S_letter=0x6c  ,T_letter=0x78, U_letter=0x1c,
+
+	V_letter=0x3e ,W_letter=0x7e , X_letter=0x76 ,Y_letter=0x6E , Z_letter=0x1B  ,
+
+	Empty = 0x00,
+
+	Symbol_minus=0x40
+} Segment_Codes;
+
+/* -------------------------------------------------------------------------------*\
+ */
+extern uint8_t Res_it;
+extern uint8_t StartSevSeg_it;
+extern int Comma_flag;
+
+#define MOVING_SENTENCE_MAX_LENGTH 100
+#define MOVING_SENTENCE_COUNTER_OVERFLOW 95 // moving time: 300 ms (500 / 3.145)
+
+extern uint8_t  Moving_sentence_buffer[MOVING_SENTENCE_MAX_LENGTH + 6];
+extern uint8_t  Moving_sentence_length;
+extern uint8_t  Moving_sentence_flag;
+extern uint32_t Moving_sentence_counter;
+extern uint8_t  Moving_sentence_index;
+
+
+
+extern Segment_Codes Digit[6]; //Digit[0]: LSD, Digit[5]: MSD
+extern Segment_Codes get_number_code(uint8_t digit);
+extern Segment_Codes get_letter_code(char letter);
+extern Segment_Codes clear_all_digits(void);
+
 
 /* Indicator LED */
 #define _IND_LED_PORT			GPIOB
@@ -182,7 +228,7 @@ extern void ExecuteMonitor(void);
  |								  APIs							          |  																 	|
 /* -----------------------------------------------------------------------
  */
-
+extern Module_Status SevenDisplayNumber(int32_t Number, uint8_t StartSevSeg);
 void SetupPortForRemoteBootloaderUpdate(uint8_t port);
 void remoteBootloaderUpdate(uint8_t src,uint8_t dst,uint8_t inport,uint8_t outport);
 
