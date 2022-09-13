@@ -17,11 +17,10 @@
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f0xx_hal.h"
+#include "stm32g0xx_hal.h"
 
 extern void GPIO_Init(void);
 extern void IND_LED_Init(void);
-extern void seven_seg_gpio_init(void);
 
 #ifdef __cplusplus
 }
