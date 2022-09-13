@@ -1172,7 +1172,7 @@ Module_Status SevenDisplayQuantities(float NumberF, uint8_t Res,char Unit ,uint8
 
 
 
-	   			if(Number_int>0 && Number_int<=9)
+	   			if(Number_int>=0 && Number_int<=9)
 	   			{
 	   				length= 1;
 	   			}
@@ -1207,7 +1207,7 @@ Module_Status SevenDisplayQuantities(float NumberF, uint8_t Res,char Unit ,uint8
 
 
 	   			if(zero_flag == 0) index_digit_last = length + StartSevSeg+1;
-	   			 else index_digit_last = Res + 1 + StartSevSeg;
+	   			 else index_digit_last = Res + 2 + StartSevSeg;
 	   				if(signal==1)
 	   				{
 	   					Digit[index_digit_last] = Symbol_minus;
