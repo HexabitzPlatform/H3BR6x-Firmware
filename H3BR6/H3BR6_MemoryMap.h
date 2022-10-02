@@ -15,22 +15,22 @@
  extern "C" {
 #endif
 
-/* Memory map: - STM32F091CB
- - Application: 0x08000000 - 0x0807FFFF >> 118 KB
- - Read-only (RO): 0x0801D800 - 0x0801DFFF >> 2 KB, used to store topology information and Command Snippets
- - Emulated EEPROM: 0x0801E000 - 0x0801FFFF >> 8 KB, fits 1024 16-bit variables in 2 main-duplicate pages (A and B)
+/* Memory map: - STM32G0B1CE
+ - Application: 0x08000000 - 0x08075BFF >> 471 KB
+ - Read-only (RO): 0x08075C00 - 0x08076FFF >> 5 KB, used to store topology information and Command Snippets
+ - Emulated EEPROM: 0x08077000 - 0x0807E7FF >>30 KB, fits 1024 16-bit variables in 2 main-duplicate pages (A and B)
  */
 #ifdef FLASH_SIZE
 	#undef FLASH_SIZE
 #endif
 
 #define APP_START_ADDRESS  		((uint32_t)0x08000000)
-#define RO_START_ADDRESS  		((uint32_t)0x08073000)
-#define RO_MID_ADDRESS  		((uint32_t)0x0807D8EF) 		// Snippets are stored here
-#define EEPROM_START_ADDRESS  	((uint32_t)0x0807E0BF)
-#define FLASH_SIZE				((uint32_t)0x800000UL)	//TOBECHECKED		// All sizes in bytes
-#define SRAM_SIZE				((uint32_t)0x8000)
-#define PAGE_SIZE               ((uint32_t)0x0800)  		/* Page size = 2KByte for STM32F07x and STM32F09x devices */
+#define RO_START_ADDRESS  		((uint32_t)0x08075C00)
+#define RO_MID_ADDRESS  		((uint32_t)0x0807D400) 		// Snippets are stored here
+#define EEPROM_START_ADDRESS  	((uint32_t)0x08077000)
+#define FLASH_SIZE				((uint32_t)0x80000)	        //TOBECHECKED		// All sizes in bytes
+#define SRAM_SIZE				((uint32_t)0x24000)   //size for G0=144kb
+#define PAGE_SIZE               ((uint32_t)0x0800)  		/* Page size = 2KByte  */
 #define NumOfPages				(FLASH_SIZE/PAGE_SIZE)
 
 #ifdef __cplusplus
