@@ -179,13 +179,24 @@ typedef enum{
 	Empty = 0x00,
 
 	Symbol_minus=0x40
+
 } Segment_Codes;
+
+typedef enum{
+	Ind1=1,
+	Ind2,
+	Ind3,
+	Ind4,
+	offled=0x00,
+	onled=0xFF
+} IndicatorLED;
 
 /* -------------------------------------------------------------------------------*\
  */
 extern uint8_t Res_it;
 extern uint8_t StartSevSeg_it;
 extern int Comma_flag;
+
 
 #define MOVING_SENTENCE_MAX_LENGTH 100
 #define MOVING_SENTENCE_COUNTER_OVERFLOW 95 // moving time: 300 ms (500 / 3.145)
@@ -198,11 +209,10 @@ extern uint8_t  Moving_sentence_index;
 
 
 
-extern Segment_Codes Digit[6]; //Digit[0]: LSD, Digit[5]: MSD
+extern Segment_Codes Digit[7]; //Digit[0]: LSD, Digit[5]: MSD
 extern Segment_Codes get_number_code(uint8_t digit);
 extern Segment_Codes get_letter_code(char letter);
 extern Segment_Codes clear_all_digits(void);
-
 
 /* Indicator LED */
 #define _IND_LED_PORT			GPIOB
@@ -235,6 +245,9 @@ extern Module_Status SevenDisplayLetter(char letter , uint8_t StartSevSeg);
 extern Module_Status SevenDisplaySentence(char *Sentance,uint16_t length,uint8_t StartSevSeg);
 extern Module_Status SevenDisplayMovingSentence(char *Sentance,uint16_t length);
 extern Module_Status SevenDisplayOff(void);
+extern Module_Status SetIndicator(IndicatorLED indicator );
+extern Module_Status ClearIndicator(IndicatorLED  indicator);
+
 void SetupPortForRemoteBootloaderUpdate(uint8_t port);
 void remoteBootloaderUpdate(uint8_t src,uint8_t dst,uint8_t inport,uint8_t outport);
 

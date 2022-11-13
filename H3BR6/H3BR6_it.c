@@ -54,6 +54,7 @@ void TIM6_DAC_LPTIM1_IRQHandler(void)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
+
 	if(htim == &htim6)
 	{
 		HAL_GPIO_WritePin(Seven_seg_Enable_1_GPIO_Port, Seven_seg_Enable_1_Pin, GPIO_PIN_SET);
@@ -66,6 +67,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 
 
+
+
+
 		HAL_GPIO_WritePin(Seven_seg_a_GPIO_Port, Seven_seg_a_Pin, 	Digit[index_7_seg] & 0b00000001);
 		HAL_GPIO_WritePin(Seven_seg_b_GPIO_Port, Seven_seg_b_Pin, 	Digit[index_7_seg] & 0b00000010);
 		HAL_GPIO_WritePin(Seven_seg_c_GPIO_Port, Seven_seg_c_Pin, 	Digit[index_7_seg] & 0b00000100);
@@ -74,7 +78,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		HAL_GPIO_WritePin(Seven_seg_f_GPIO_Port, Seven_seg_f_Pin, 	Digit[index_7_seg] & 0b00100000);
 		HAL_GPIO_WritePin(Seven_seg_g_GPIO_Port, Seven_seg_g_Pin, 	Digit[index_7_seg] & 0b01000000);
 		HAL_GPIO_WritePin(Seven_seg_DP_GPIO_Port, Seven_seg_DP_Pin, 0);
-		if(index_7_seg==StartSevSeg_it+Res_it && Comma_flag==1){HAL_GPIO_WritePin(Seven_seg_DP_GPIO_Port, Seven_seg_DP_Pin, 1);}
+		if(index_7_seg==StartSevSeg_it+Res_it && Comma_flag==1)
+		{HAL_GPIO_WritePin(Seven_seg_DP_GPIO_Port, Seven_seg_DP_Pin, 1);}
 
 		switch(index_7_seg)
 		{
@@ -102,13 +107,24 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 				HAL_GPIO_WritePin(Seven_seg_Enable_6_GPIO_Port, Seven_seg_Enable_6_Pin, GPIO_PIN_RESET);
 				break;
 
+			case 6:
+				HAL_GPIO_WritePin(C_LED_GPIO_Port, C_LED_Pin, GPIO_PIN_RESET);
+				HAL_GPIO_WritePin(Seven_seg_DP_GPIO_Port, Seven_seg_DP_Pin, Digit[6] & 0b10000000);
+
+				break;
+
 			default:
 				break;
 
 		}
 
+
+
+
+
+
 		index_7_seg++;
-		if(index_7_seg > 5) index_7_seg = 0;
+		if(index_7_seg > 7) index_7_seg = 0;
 	// Processing Moving sentence:
 		if(Moving_sentence_flag == 1)
 		{

@@ -7,8 +7,8 @@
  	 	 	 	 (Description_of_module)
 
 (Description of Special module peripheral configuration):
->>
->>
+>>USARTs 1,2,3,5 for module ports.
+>>Timer6 for Seven Segment
 >>
 
  */
@@ -29,7 +29,7 @@ extern FLASH_ProcessTypeDef pFlash;
 extern uint8_t numOfRecordedSnippets;
 
 
-Segment_Codes Digit[6] = {Empty}; //Digit[0]: LSD, Digit[5]: MSD
+Segment_Codes Digit[7] = {Empty}; //Digit[0]: LSD, Digit[6]: MSD
 /* Module exported parameters ------------------------------------------------*/
 module_param_t modParam[NUM_MODULE_PARAMS] ={{.paramPtr = NULL, .paramFormat =FMT_FLOAT, .paramName =""}};
 
@@ -38,6 +38,8 @@ uint8_t Res_it;          //A global variable to specify the index of the comma
 uint8_t StartSevSeg_it;  //A global variable to specify the index of the comma
 int Comma_flag=0;        //Activate a flag when a float number is shown
 
+IndicatorLED statusLed=offled;     //for indicator leds
+IndicatorLED statusLed_old=onled;  //for indicator leds
 
 uint8_t  Moving_sentence_buffer[MOVING_SENTENCE_MAX_LENGTH + 6] = {0};
 uint8_t  Moving_sentence_length = 0;
@@ -56,6 +58,8 @@ portBASE_TYPE CLI_SevenDisplayLetterCommand( int8_t *pcWriteBuffer, size_t xWrit
 portBASE_TYPE CLI_SevenDisplaySentenceCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
 portBASE_TYPE CLI_SevenDisplayMovingSentenceCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
 portBASE_TYPE CLI_SevenDisplayOffCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
+portBASE_TYPE CLI_SetIndicatorCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
+portBASE_TYPE CLI_ClearIndicatorCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
 
 /* CLI command structure : SevenDisplayNumber */
 const CLI_Command_Definition_t CLI_SevenDisplayNumberCommandDefinition =
@@ -123,8 +127,26 @@ const CLI_Command_Definition_t CLI_SevenDisplayOffCommandDefinition =
 };
 
 
+/* CLI command structure : SetIndicator */
+const CLI_Command_Definition_t CLI_SetIndicatorCommandDefinition =
+{
+	( const int8_t * ) "set_indicator", /* The command string to type. */
+	( const int8_t * ) "set_indicator:\r\nParameters required to execute a SetIndicator: indicator number \r\n\r\n",
+	CLI_SetIndicatorCommand, /* The function to run. */
+	1 /* one parameters are expected. */
+};
 
-/*-----------------------------------------------------------*/
+
+/* CLI command structure : ClearIndicator */
+const CLI_Command_Definition_t CLI_ClearIndicatorCommandDefinition =
+{
+	( const int8_t * ) "clear_indicator", /* The command string to type. */
+	( const int8_t * ) "clear_indicator:\r\nParameters required to execute a ClearIncicator: indicator number \r\n\r\n",
+	CLI_ClearIndicatorCommand, /* The function to run. */
+	1 /* one parameters are expected. */
+};
+
+
 /*-----------------------------------------------------------*/
 
 /* -----------------------------------------------------------------------
@@ -412,6 +434,8 @@ Module_Status Module_MessagingTask(uint16_t code,uint8_t port,uint8_t src,uint8_
 
     uint8_t length;
 
+    IndicatorLED indicator;
+
 	switch(code){
 	  case CODE_H3BR6_SevenDisplayNumber:
 	  Number=((int32_t )cMessage[port - 1][shift] ) + ((int32_t )cMessage[port - 1][1 + shift] << 8) + ((int32_t )cMessage[port - 1][2 + shift] << 16) + ((int32_t )cMessage[port - 1][3 + shift] << 24);
@@ -456,8 +480,19 @@ Module_Status Module_MessagingTask(uint16_t code,uint8_t port,uint8_t src,uint8_
 		  SevenDisplayOff();
 		  break;
 
-	}
+	  case CODE_H3BR6_SetIndicator:
+		  indicator=(uint8_t)cMessage[port - 1][shift];
+		  SetIndicator(indicator);
+		  break;
 
+	  case CODE_H3BR6_ClearIndicator:
+		  indicator=(uint8_t)cMessage[port - 1][shift];
+		  ClearIndicator(indicator);
+		  break;
+	  default:
+			result =H3BR6_ERR_UnknownMessage;
+			break;
+	}
 
 
 	return result;
@@ -495,6 +530,8 @@ void RegisterModuleCLICommands(void){
 		FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplaySentenceCommandDefinition);
 		FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplayMovingSentenceCommandDefinition);
 		FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplayOffCommandDefinition);
+		FreeRTOS_CLIRegisterCommand(&CLI_SetIndicatorCommandDefinition);
+		FreeRTOS_CLIRegisterCommand(&CLI_ClearIndicatorCommandDefinition);
 
 
 
@@ -527,7 +564,7 @@ void RegisterModuleCLICommands(void){
 /*-----------------------------------------------------------*/
 Segment_Codes get_number_code(uint8_t digit)
 {
-	Segment_Codes status = H3BR6_OK;
+	Module_Status status = H3BR6_OK;
 
 	Segment_Codes code;
 	switch(digit)
@@ -573,7 +610,7 @@ Segment_Codes get_number_code(uint8_t digit)
 
 /*-----------------------------------------------------------*/
 Segment_Codes get_letter_code(char letter){
-	Segment_Codes status = H3BR6_OK;
+	Module_Status status = H3BR6_OK;
 
 	Segment_Codes letter_code;
 	switch(letter){
@@ -744,16 +781,14 @@ Segment_Codes get_letter_code(char letter){
 /*-----------------------------------------------------------*/
 
 Segment_Codes clear_all_digits(void){
-	Segment_Codes status = H3BR6_OK;
-	for(int i=0;i<6;i++) Digit[i] = Empty;
+	Module_Status status = H3BR6_OK;
+
+	for(int i=0;i<7;i++) Digit[i] = Empty;
 	Comma_flag = 0;
 	Moving_sentence_flag = 0;
 	Moving_sentence_counter = 0;
+
 }
-/*-----------------------------------------------------------*/
-
-
-
 
 /*-----------------------------------------------------------*/
 
@@ -879,7 +914,6 @@ Module_Status SevenDisplayNumber(int32_t Number, uint8_t StartSevSeg)
 			if(signal==1 && x==index_digit_last)continue;
 			Digit[x]=Empty;
 		}
-
 
 	return status;
 
@@ -1296,7 +1330,6 @@ Module_Status SevenDisplaySentence(char *Sentence,uint16_t length,uint8_t StartS
 		{
 			letter=Sentence[x];
 
-//			Digit[StartSevSeg++]=get_letter_code(letter);
 			if( (Sentence[x] >= 'a' && Sentence[x] <= 'z') ||
 					(Sentence[x] >= 'A' && Sentence[x] <= 'Z') )
 			{
@@ -1366,10 +1399,88 @@ Module_Status SevenDisplayMovingSentence(char *Sentence,uint16_t length){
 }
 /*-----------------------------------------------------------*/
 Module_Status SevenDisplayOff(void){
+
 	Module_Status status = H3BR6_OK;
 	clear_all_digits();   //Seven segment display off
 	return status;
 
+}
+/*-----------------------------------------------------------*/
+Module_Status SetIndicator( IndicatorLED indicator ){
+
+	Module_Status status = H3BR6_OK;
+
+    if(indicator==Ind1)
+    {
+		statusLed|=0x02;
+	}
+
+	else if(indicator==Ind2)
+	{
+		statusLed|=0x04;
+	}
+
+	else if(indicator==Ind3)
+	{
+		statusLed|=0x40;
+	}
+
+	else if(indicator==Ind4)
+	{
+		statusLed|=0x80;
+	}
+
+	else
+	{
+		status=H3BR6_ERROR;
+		return status;
+	}
+
+	Digit[6]=statusLed;
+	statusLed_old=statusLed;
+	if(statusLed==0xC6)
+	{
+		statusLed=offled;
+	}
+
+	return status;
+
+}
+/*-----------------------------------------------------------*/
+Module_Status ClearIndicator(IndicatorLED  indicator){
+
+	Module_Status status = H3BR6_OK;
+
+	if(indicator==Ind1)
+	{
+		statusLed_old&=0xFD;
+	}
+
+	else if(indicator==Ind2)
+	{
+		statusLed_old&=0xC2;
+	}
+
+	else if(indicator==Ind3)
+	{
+		statusLed_old&=0x86;
+	}
+
+	else if(indicator==Ind4)
+	{
+		statusLed_old&=0x46;
+	}
+
+	else
+	{
+		status=H3BR6_ERROR;
+		return status;
+	}
+
+	Digit[6]=statusLed_old;
+	statusLed=statusLed_old;
+
+	return status;
 
 }
 /*-----------------------------------------------------------*/
@@ -1755,6 +1866,77 @@ portBASE_TYPE CLI_SevenDisplayOffCommand( int8_t *pcWriteBuffer, size_t xWriteBu
 
 	return pdFALSE;
 
-}/*-----------------------------------------------------------*/
+}
+/*-----------------------------------------------------------*/
+portBASE_TYPE CLI_SetIndicatorCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString ){
+	Module_Status status = H3BR6_OK;
+	IndicatorLED indicator;
+
+	static int8_t *pcParameterString1;
+
+	portBASE_TYPE xParameterStringLength1 =0;
+
+	static const int8_t *pcOKMessage=(int8_t* )"SetIndicator is on \r\n  \n\r";
+	static const int8_t *pcWrongParamsMessage =(int8_t* )"Wrong Params!\n\r";
+
+
+	(void )xWriteBufferLen;
+	configASSERT(pcWriteBuffer);
+
+	pcParameterString1 =(int8_t* )FreeRTOS_CLIGetParameter(pcCommandString, 1, &xParameterStringLength1 );
+	indicator =(IndicatorLED )atol((char* )pcParameterString1);
+
+
+
+	status=SetIndicator(indicator);
+
+	if(status == H3BR6_OK)
+	{
+		sprintf((char* )pcWriteBuffer,(char* )pcOKMessage,indicator);
+
+	}
+
+	else if(status == H3BR6_ERROR)
+		strcpy((char* )pcWriteBuffer,(char* )pcWrongParamsMessage);
+
+
+	return pdFALSE;
+}
+/*-----------------------------------------------------------*/
+portBASE_TYPE CLI_ClearIndicatorCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString ){
+	Module_Status status = H3BR6_OK;
+	IndicatorLED indicator;
+
+	static int8_t *pcParameterString1;
+
+	portBASE_TYPE xParameterStringLength1 =0;
+
+	static const int8_t *pcOKMessage=(int8_t* )"SetIndicator is on \r\n  \n\r";
+	static const int8_t *pcWrongParamsMessage =(int8_t* )"Wrong Params!\n\r";
+
+
+	(void )xWriteBufferLen;
+	configASSERT(pcWriteBuffer);
+
+	pcParameterString1 =(int8_t* )FreeRTOS_CLIGetParameter(pcCommandString, 1, &xParameterStringLength1 );
+	indicator =(IndicatorLED )atol((char* )pcParameterString1);
+
+
+
+	status=ClearIndicator(indicator);
+
+	if(status == H3BR6_OK)
+	{
+		sprintf((char* )pcWriteBuffer,(char* )pcOKMessage,indicator);
+
+	}
+
+	else if(status == H3BR6_ERROR)
+		strcpy((char* )pcWriteBuffer,(char* )pcWrongParamsMessage);
+
+
+	return pdFALSE;
+}
+/*-----------------------------------------------------------*/
 
 /************************ (C) COPYRIGHT HEXABITZ *****END OF FILE****/
