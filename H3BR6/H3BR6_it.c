@@ -10,22 +10,20 @@
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
 #include "H3BR6.h"
+
 uint8_t temp_length[NumOfPorts] = {0};
 uint8_t temp_index[NumOfPorts] = {0};
 uint8_t* error_restart_message = "Restarting...\r\n";
 
 uint8_t index_7_seg = 0;
-
-
 /* External variables --------------------------------------------------------*/
 extern uint8_t UARTRxBuf[NumOfPorts][MSG_RX_BUF_SIZE];
 extern uint8_t UARTRxBufIndex[NumOfPorts];
 
+extern TIM_HandleTypeDef htim6; /* Timer for 7-segment (6 peices) */
 /* External function prototypes ----------------------------------------------*/
 
 extern TaskHandle_t xCommandConsoleTaskHandle; // CLI Task handler.
-
-extern TIM_HandleTypeDef htim6; /* Timer for 7-segment (6 peices) */
 
 
 /******************************************************************************/
@@ -42,25 +40,35 @@ void SysTick_Handler(void){
 	
 }
 
-void TIM6_DAC_IRQHandler(void)
+void TIM6_DAC_LPTIM1_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+  /* USER CODE BEGIN TIM6_DAC_LPTIM1_IRQn 0 */
 
-  /* USER CODE END TIM6_DAC_IRQn 0 */
+  /* USER CODE END TIM6_DAC_LPTIM1_IRQn 0 */
   HAL_TIM_IRQHandler(&htim6);
-  /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
+  /* USER CODE BEGIN TIM6_DAC_LPTIM1_IRQn 1 */
 
-  /* USER CODE END TIM6_DAC_IRQn 1 */
+  /* USER CODE END TIM6_DAC_LPTIM1_IRQn 1 */
 }
 
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
+
 	if(htim == &htim6)
 	{
+		HAL_GPIO_WritePin(Seven_seg_Enable_1_GPIO_Port, Seven_seg_Enable_1_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(Seven_seg_Enable_2_GPIO_Port, Seven_seg_Enable_2_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(Seven_seg_Enable_3_GPIO_Port, Seven_seg_Enable_3_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(Seven_seg_Enable_4_GPIO_Port, Seven_seg_Enable_4_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(Seven_seg_Enable_5_GPIO_Port, Seven_seg_Enable_5_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(Seven_seg_Enable_6_GPIO_Port, Seven_seg_Enable_6_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(C_LED_GPIO_Port, C_LED_Pin, GPIO_PIN_SET);
 
-		index_7_seg++;
-		if(index_7_seg > 5) index_7_seg = 0;
+
+
+
+
 
 		HAL_GPIO_WritePin(Seven_seg_a_GPIO_Port, Seven_seg_a_Pin, 	Digit[index_7_seg] & 0b00000001);
 		HAL_GPIO_WritePin(Seven_seg_b_GPIO_Port, Seven_seg_b_Pin, 	Digit[index_7_seg] & 0b00000010);
@@ -70,14 +78,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		HAL_GPIO_WritePin(Seven_seg_f_GPIO_Port, Seven_seg_f_Pin, 	Digit[index_7_seg] & 0b00100000);
 		HAL_GPIO_WritePin(Seven_seg_g_GPIO_Port, Seven_seg_g_Pin, 	Digit[index_7_seg] & 0b01000000);
 		HAL_GPIO_WritePin(Seven_seg_DP_GPIO_Port, Seven_seg_DP_Pin, 0);
-if(index_7_seg==StartSevSeg_it+Res_it && Comma_flag==1){HAL_GPIO_WritePin(Seven_seg_DP_GPIO_Port, Seven_seg_DP_Pin, 1);}
-
-		HAL_GPIO_WritePin(Seven_seg_Enable_1_GPIO_Port, Seven_seg_Enable_1_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(Seven_seg_Enable_2_GPIO_Port, Seven_seg_Enable_2_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(Seven_seg_Enable_3_GPIO_Port, Seven_seg_Enable_3_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(Seven_seg_Enable_4_GPIO_Port, Seven_seg_Enable_4_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(Seven_seg_Enable_5_GPIO_Port, Seven_seg_Enable_5_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(Seven_seg_Enable_6_GPIO_Port, Seven_seg_Enable_6_Pin, GPIO_PIN_SET);
+		if(index_7_seg==StartSevSeg_it+Res_it && Comma_flag==1)
+		{HAL_GPIO_WritePin(Seven_seg_DP_GPIO_Port, Seven_seg_DP_Pin, 1);}
 
 		switch(index_7_seg)
 		{
@@ -105,12 +107,24 @@ if(index_7_seg==StartSevSeg_it+Res_it && Comma_flag==1){HAL_GPIO_WritePin(Seven_
 				HAL_GPIO_WritePin(Seven_seg_Enable_6_GPIO_Port, Seven_seg_Enable_6_Pin, GPIO_PIN_RESET);
 				break;
 
+			case 6:
+				HAL_GPIO_WritePin(C_LED_GPIO_Port, C_LED_Pin, GPIO_PIN_RESET);
+				HAL_GPIO_WritePin(Seven_seg_DP_GPIO_Port, Seven_seg_DP_Pin, Digit[6] & 0b10000000);
+
+				break;
+
 			default:
 				break;
 
 		}
 
 
+
+
+
+
+		index_7_seg++;
+		if(index_7_seg > 7) index_7_seg = 0;
 	// Processing Moving sentence:
 		if(Moving_sentence_flag == 1)
 		{
@@ -143,7 +157,6 @@ if(index_7_seg==StartSevSeg_it+Res_it && Comma_flag==1){HAL_GPIO_WritePin(Seven_
 	}
 
 }
-
 /**
  * @brief This function handles Hard Fault error callback.
  */
@@ -185,7 +198,7 @@ void USART1_IRQHandler(void){
 /**
  * @brief This function handles USART2 global interrupt / USART2 wake-up interrupt through EXTI line 26.
  */
-void USART2_IRQHandler(void){
+void USART2_LPUART2_IRQHandler(void){
 	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 	
 #if defined (_Usart2)	
@@ -203,7 +216,8 @@ void USART2_IRQHandler(void){
 /**
  * @brief This function handles USART3 to USART8 global interrupts / USART3 wake-up interrupt through EXTI line 28.
  */
-void USART3_8_IRQHandler(void){
+
+void USART3_4_5_6_LPUART1_IRQHandler(void){
 	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 	
 #if defined (_Usart3)
@@ -303,7 +317,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart){
 	/* Loop here */
 	//for(;;) {};
 	/* Set the UART state ready to be able to start the process again */
-	huart->State =HAL_UART_STATE_READY;
+	huart->gState =HAL_UART_STATE_READY;
 	
 	/* Resume streaming DMA for this UART port */
 	uint8_t port =GetPort(huart);
@@ -390,7 +404,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 		}
 	}
 
-		HAL_UART_Receive_DMA(huart,(uint8_t* )&Rx_Data[GetPort(huart) - 1] , 1);
+//		HAL_UART_Receive_DMA(huart,(uint8_t* )&Rx_Data[GetPort(huart) - 1] , 1);
+	HAL_UART_Receive_IT(huart,(uint8_t* )&Rx_Data[GetPort(huart) - 1] , 1);
 }
 
 /*-----------------------------------------------------------*/

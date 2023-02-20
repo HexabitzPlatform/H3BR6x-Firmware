@@ -33,7 +33,7 @@
 /* Port-related definitions */
 #define	NumOfPorts			5
 
-#define P_PROG 				P1						/* ST factory bootloader UART */
+#define P_PROG 				P2						/* ST factory bootloader UART */
 
 /* Define available ports */
 #define _P1 
@@ -42,17 +42,19 @@
 #define _P4 
 #define _P5 
 
+
 /* Define available USARTs */
 #define _Usart1 1
 #define _Usart2 1
 #define _Usart3 1
 #define _Usart5 1
-#define _Usart6 1
+#define _Usart6	1
+
 
 /* Port-UART mapping */
 
-#define P1uart &huart2
-#define P2uart &huart6
+#define P1uart &huart6
+#define P2uart &huart2
 #define P3uart &huart3
 #define P4uart &huart1
 #define P5uart &huart5
@@ -77,34 +79,33 @@
 #define	USART3_RX_PORT		GPIOB
 #define	USART3_AF			GPIO_AF4_USART3
 
-#define	USART4_TX_PIN		GPIO_PIN_0
-#define	USART4_RX_PIN		GPIO_PIN_1
-#define	USART4_TX_PORT		GPIOA
-#define	USART4_RX_PORT		GPIOA
-#define	USART4_AF			GPIO_AF4_USART4
+
 
 #define	USART5_TX_PIN		GPIO_PIN_3
-#define	USART5_RX_PIN		GPIO_PIN_4
-#define	USART5_TX_PORT		GPIOB
-#define	USART5_RX_PORT		GPIOB
-#define	USART5_AF			GPIO_AF4_USART5
+#define	USART5_RX_PIN		GPIO_PIN_2
+#define	USART5_TX_PORT		GPIOD
+#define	USART5_RX_PORT		GPIOD
+#define	USART5_AF			GPIO_AF3_USART5
 
-#define	USART6_TX_PIN		GPIO_PIN_4
-#define	USART6_RX_PIN		GPIO_PIN_5
-#define	USART6_TX_PORT		GPIOA
-#define	USART6_RX_PORT		GPIOA
-#define	USART6_AF			GPIO_AF5_USART6
+#define	USART6_TX_PIN		GPIO_PIN_8
+#define	USART6_RX_PIN		GPIO_PIN_9
+#define	USART6_TX_PORT		GPIOB
+#define	USART6_RX_PORT		GPIOB
+#define	USART6_AF			GPIO_AF8_USART6
 
 /* Module-specific Definitions */
 
-/*  Pins For SevenSegment*/
-#define Seven_seg_a_Pin 				GPIO_PIN_7
-#define Seven_seg_a_GPIO_Port 			GPIOB
+#define NUM_MODULE_PARAMS						1
 
-#define Seven_seg_b_Pin 				GPIO_PIN_6
+
+/*  Pins For SevenSegment*/
+#define Seven_seg_a_Pin 				GPIO_PIN_1
+#define Seven_seg_a_GPIO_Port 			GPIOA
+
+#define Seven_seg_b_Pin 				GPIO_PIN_5
 #define Seven_seg_b_GPIO_Port 			GPIOA
 
-#define Seven_seg_c_Pin 				GPIO_PIN_7
+#define Seven_seg_c_Pin 				GPIO_PIN_6
 #define Seven_seg_c_GPIO_Port	 		GPIOA
 
 #define Seven_seg_d_Pin 				GPIO_PIN_1
@@ -113,46 +114,43 @@
 #define Seven_seg_e_Pin 				GPIO_PIN_2
 #define Seven_seg_e_GPIO_Port 			GPIOB
 
-#define Seven_seg_f_Pin 				GPIO_PIN_9
-#define Seven_seg_f_GPIO_Port 			GPIOB
+#define Seven_seg_f_Pin 				GPIO_PIN_4
+#define Seven_seg_f_GPIO_Port 			GPIOA
 
-#define Seven_seg_g_Pin 				GPIO_PIN_15
-#define Seven_seg_g_GPIO_Port 			GPIOB
+#define Seven_seg_g_Pin 				GPIO_PIN_7
+#define Seven_seg_g_GPIO_Port 			GPIOA
 
 #define Seven_seg_DP_Pin 				GPIO_PIN_0
 #define Seven_seg_DP_GPIO_Port 			GPIOB
 
 /* Enable Pin For SevenSegment*/
-#define Seven_seg_Enable_1_Pin 			GPIO_PIN_14
+#define Seven_seg_Enable_1_Pin 			GPIO_PIN_12
 #define Seven_seg_Enable_1_GPIO_Port 	GPIOB
 
-#define Seven_seg_Enable_2_Pin 			GPIO_PIN_6
-#define Seven_seg_Enable_2_GPIO_Port 	GPIOB
+#define Seven_seg_Enable_2_Pin 			GPIO_PIN_11
+#define Seven_seg_Enable_2_GPIO_Port 	GPIOA
 
 #define Seven_seg_Enable_3_Pin 			GPIO_PIN_13
 #define Seven_seg_Enable_3_GPIO_Port 	GPIOB
 
-#define Seven_seg_Enable_4_Pin 			GPIO_PIN_5
-#define Seven_seg_Enable_4_GPIO_Port 	GPIOB
+#define Seven_seg_Enable_4_Pin 			GPIO_PIN_8
+#define Seven_seg_Enable_4_GPIO_Port 	GPIOA
 
-#define Seven_seg_Enable_5_Pin 			GPIO_PIN_8
+#define Seven_seg_Enable_5_Pin 			GPIO_PIN_15
 #define Seven_seg_Enable_5_GPIO_Port 	GPIOB
 
-#define Seven_seg_Enable_6_Pin 			GPIO_PIN_15
+#define Seven_seg_Enable_6_Pin 			GPIO_PIN_12
 #define Seven_seg_Enable_6_GPIO_Port 	GPIOA
 
-
-
-
-
-#define NUM_MODULE_PARAMS						1
+#define C_LED_Pin 			            GPIO_PIN_14
+#define C_LED_GPIO_Port 	            GPIOB
 
 /* Module EEPROM Variables */
 
 // Module Addressing Space 500 - 599
 #define _EE_MODULE							500		
 
-/* Module_Status Type Definition */
+//* Module_Status Type Definition */
 typedef enum {
 	H3BR6_OK =0,
 	H3BR6_ERR_UnknownMessage,
@@ -181,7 +179,17 @@ typedef enum{
 	Empty = 0x00,
 
 	Symbol_minus=0x40
+
 } Segment_Codes;
+
+typedef enum{
+	Ind1=1,
+	Ind2,
+	Ind3,
+	Ind4,
+	offled=0x00,
+	onled=0xFF
+} IndicatorLED;
 
 /* -------------------------------------------------------------------------------*\
  */
@@ -189,10 +197,11 @@ extern uint8_t Res_it;
 extern uint8_t StartSevSeg_it;
 extern int Comma_flag;
 
+
 #define MOVING_SENTENCE_MAX_LENGTH 100
 #define MOVING_SENTENCE_COUNTER_OVERFLOW 95 // moving time: 300 ms (500 / 3.145)
 
-uint8_t  Moving_sentence_buffer[MOVING_SENTENCE_MAX_LENGTH + 6];
+extern uint8_t  Moving_sentence_buffer[MOVING_SENTENCE_MAX_LENGTH + 6];
 extern uint8_t  Moving_sentence_length;
 extern uint8_t  Moving_sentence_flag;
 extern uint32_t Moving_sentence_counter;
@@ -200,16 +209,14 @@ extern uint8_t  Moving_sentence_index;
 
 
 
-extern Segment_Codes Digit[6]; //Digit[0]: LSD, Digit[5]: MSD
+extern Segment_Codes Digit[7]; //Digit[0]: LSD, Digit[5]: MSD
 extern Segment_Codes get_number_code(uint8_t digit);
 extern Segment_Codes get_letter_code(char letter);
 extern Segment_Codes clear_all_digits(void);
 
-
-
 /* Indicator LED */
-#define _IND_LED_PORT			GPIOA
-#define _IND_LED_PIN			GPIO_PIN_11
+#define _IND_LED_PORT			GPIOB
+#define _IND_LED_PIN			GPIO_PIN_7
 
 /* Export UART variables */
 extern UART_HandleTypeDef huart1;
@@ -238,7 +245,8 @@ extern Module_Status SevenDisplayLetter(char letter , uint8_t StartSevSeg);
 extern Module_Status SevenDisplaySentence(char *Sentance,uint16_t length,uint8_t StartSevSeg);
 extern Module_Status SevenDisplayMovingSentence(char *Sentance,uint16_t length);
 extern Module_Status SevenDisplayOff(void);
-
+extern Module_Status SetIndicator(IndicatorLED indicator );
+extern Module_Status ClearIndicator(IndicatorLED  indicator);
 
 void SetupPortForRemoteBootloaderUpdate(uint8_t port);
 void remoteBootloaderUpdate(uint8_t src,uint8_t dst,uint8_t inport,uint8_t outport);
@@ -254,6 +262,7 @@ extern const CLI_Command_Definition_t CLI_SevenDisplayLetterCommandDefinition;
 extern const CLI_Command_Definition_t CLI_SevenDisplaySentanceCommandDefinition;
 extern const CLI_Command_Definition_t CLI_SevenDisplayMovingSentanceCommandDefinition;
 extern const CLI_Command_Definition_t CLI_SevenDisplayOffCommandDefinition;
+
 
 
 #endif /* H3BR6_H */

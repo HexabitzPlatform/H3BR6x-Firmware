@@ -7,8 +7,8 @@
  	 	 	 	 (Description_of_module)
 
 (Description of Special module peripheral configuration):
->>
->>
+>>USARTs 1,2,3,5 for module ports.
+>>Timer6 for Seven Segment
 >>
 
  */
@@ -20,17 +20,16 @@
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
+UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart5;
 UART_HandleTypeDef huart6;
 
 /* Exported variables */
 extern FLASH_ProcessTypeDef pFlash;
 extern uint8_t numOfRecordedSnippets;
-//---------------------
 
-Segment_Codes Digit[6] = {Empty}; //Digit[0]: LSD, Digit[5]: MSD
-//---------------------
 
+Segment_Codes Digit[7] = {Empty}; //Digit[0]: LSD, Digit[6]: MSD
 /* Module exported parameters ------------------------------------------------*/
 module_param_t modParam[NUM_MODULE_PARAMS] ={{.paramPtr = NULL, .paramFormat =FMT_FLOAT, .paramName =""}};
 
@@ -39,6 +38,8 @@ uint8_t Res_it;          //A global variable to specify the index of the comma
 uint8_t StartSevSeg_it;  //A global variable to specify the index of the comma
 int Comma_flag=0;        //Activate a flag when a float number is shown
 
+IndicatorLED statusLed=offled;     //for indicator leds
+IndicatorLED statusLed_old=onled;  //for indicator leds
 
 uint8_t  Moving_sentence_buffer[MOVING_SENTENCE_MAX_LENGTH + 6] = {0};
 uint8_t  Moving_sentence_length = 0;
@@ -46,10 +47,10 @@ uint8_t  Moving_sentence_flag = 0;
 uint32_t Moving_sentence_counter = 0;
 uint8_t  Moving_sentence_index = 0;
 
-
 /* Private function prototypes -----------------------------------------------*/
 void ExecuteMonitor(void);
 void MX_TIM6_Init(void);
+void FLASH_Page_Eras(uint32_t Addr );
 
 /* Create CLI commands --------------------------------------------------------*/
 portBASE_TYPE CLI_SevenDisplayNumberCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
@@ -59,6 +60,8 @@ portBASE_TYPE CLI_SevenDisplayLetterCommand( int8_t *pcWriteBuffer, size_t xWrit
 portBASE_TYPE CLI_SevenDisplaySentenceCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
 portBASE_TYPE CLI_SevenDisplayMovingSentenceCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
 portBASE_TYPE CLI_SevenDisplayOffCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
+portBASE_TYPE CLI_SetIndicatorCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
+portBASE_TYPE CLI_ClearIndicatorCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
 
 /* CLI command structure : SevenDisplayNumber */
 const CLI_Command_Definition_t CLI_SevenDisplayNumberCommandDefinition =
@@ -126,7 +129,28 @@ const CLI_Command_Definition_t CLI_SevenDisplayOffCommandDefinition =
 };
 
 
+/* CLI command structure : SetIndicator */
+const CLI_Command_Definition_t CLI_SetIndicatorCommandDefinition =
+{
+	( const int8_t * ) "set_indicator", /* The command string to type. */
+	( const int8_t * ) "set_indicator:\r\nParameters required to execute a SetIndicator: indicator number \r\n\r\n",
+	CLI_SetIndicatorCommand, /* The function to run. */
+	1 /* one parameters are expected. */
+};
+
+
+/* CLI command structure : ClearIndicator */
+const CLI_Command_Definition_t CLI_ClearIndicatorCommandDefinition =
+{
+	( const int8_t * ) "clear_indicator", /* The command string to type. */
+	( const int8_t * ) "clear_indicator:\r\nParameters required to execute a ClearIncicator: indicator number \r\n\r\n",
+	CLI_ClearIndicatorCommand, /* The function to run. */
+	1 /* one parameters are expected. */
+};
+
+
 /*-----------------------------------------------------------*/
+
 /* -----------------------------------------------------------------------
  |												 Private Functions	 														|
  ----------------------------------------------------------------------- 
@@ -147,175 +171,49 @@ const CLI_Command_Definition_t CLI_SevenDisplayOffCommandDefinition =
  * @param  None
  * @retval None
  */
-//void SystemClock_Config(void)
-//{
-////  RCC_OscInitTypeDef RCC_OscInitStruct;
-////  RCC_ClkInitTypeDef RCC_ClkInitStruct;
-////  RCC_PeriphCLKInitTypeDef PeriphClkInit;
-////
-////	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48;
-////  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-////	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-////  RCC_OscInitStruct.HSICalibrationValue = 16;
-////  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-////  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-////  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
-////  RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV1;
-////  HAL_RCC_OscConfig(&RCC_OscInitStruct);
-////
-////  RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1);
-////  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-////  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-////  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-////  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1);
-////
-////  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_USART3;
-////  PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
-////  PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-////  PeriphClkInit.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
-////  HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
-////
-////	__HAL_RCC_PWR_CLK_ENABLE();
-////  HAL_PWR_EnableBkUpAccess();
-////	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
-////  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_HSE_DIV32;
-////	HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
-////
-////  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
-////
-////  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
-////
-////
-////	__SYSCFG_CLK_ENABLE();
-////
-////  /* SysTick_IRQn interrupt configuration */
-////  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
-////
-//  //..................................................//
-//
-////	RCC_OscInitTypeDef RCC_OscInitStruct;
-////		RCC_ClkInitTypeDef RCC_ClkInitStruct;
-////		RCC_PeriphCLKInitTypeDef PeriphClkInit;
-////
-////		RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-////		RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-////		RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-////		RCC_OscInitStruct.HSICalibrationValue =16;
-////		RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-////		RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-////		RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
-////		RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV1;
-////		HAL_RCC_OscConfig(&RCC_OscInitStruct);
-////
-////		RCC_ClkInitStruct.ClockType =(RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1);
-////		RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-////		RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-////		RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-////		HAL_RCC_ClockConfig(&RCC_ClkInitStruct,FLASH_LATENCY_1);
-////
-////		PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1 | RCC_PERIPHCLK_USART2 | RCC_PERIPHCLK_USART3;
-////		PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
-////		PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-////		PeriphClkInit.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
-////		HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
-////
-////		__HAL_RCC_PWR_CLK_ENABLE();
-////		HAL_PWR_EnableBkUpAccess();
-////		PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
-////		PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_HSE_DIV32;
-////		HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
-////
-////		HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
-////
-////		HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
-////
-////		__SYSCFG_CLK_ENABLE()
-////		;
-////
-////		/* SysTick_IRQn interrupt configuration */
-////		HAL_NVIC_SetPriority(SysTick_IRQn,0,0);
-//
-//
-//	  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-//	  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-//	  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
-//
-//	  /** Initializes the RCC Oscillators according to the specified parameters
-//	  * in the RCC_OscInitTypeDef structure.
-//	  */
-//	  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48;
-//	  RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
-//	  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-//
-//	  /** Initializes the CPU, AHB and APB buses clocks
-//	  */
-//	  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-//	                              |RCC_CLOCKTYPE_PCLK1;
-//	  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI48;
-//	  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-//	  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-//
-//
-//
-//	  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART3|RCC_PERIPHCLK_USART1
-//	                              |RCC_PERIPHCLK_USART2;
-//	  PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
-//	  PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-//	  PeriphClkInit.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
-//
-//
-//
-//
-//}
-void SystemClock_Config(void)
-{
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+void SystemClock_Config(void){
+	  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+	  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+	  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-  /* Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48;
-  RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-  HAL_RCC_OscConfig(&RCC_OscInitStruct);
+	  /** Configure the main internal regulator output voltage
+	  */
+	  HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1);
+	  /** Initializes the RCC Oscillators according to the specified parameters
+	  * in the RCC_OscInitTypeDef structure.
+	  */
+	  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
+	  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+	  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+	  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+	  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+	  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV1;
+	  RCC_OscInitStruct.PLL.PLLN = 12;
+	  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+	  RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
+	  RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+	  HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
-  /* Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI48;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+	  /** Initializes the CPU, AHB and APB buses clocks
+	  */
+	  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+	                              |RCC_CLOCKTYPE_PCLK1;
+	  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+	  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
 
-  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1);
+	 HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2);
 
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART3|RCC_PERIPHCLK_USART1
-                              |RCC_PERIPHCLK_USART2;
-  PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
-  PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-  PeriphClkInit.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
-  HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
-
-  //Test begin:
-     __HAL_RCC_PWR_CLK_ENABLE();
-   HAL_PWR_EnableBkUpAccess();
-   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
-   PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_HSE_DIV32;
-   HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
-
-   HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
-
-   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
-
-   __SYSCFG_CLK_ENABLE()
-   ;
-   //Test end;
+	  /** Initializes the peripherals clocks
+	  */
+	  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USART2;
+	  PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+	  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+	  HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
 
 
-  HAL_NVIC_SetPriority(SysTick_IRQn,0,0);
-
+	  HAL_NVIC_SetPriority(SysTick_IRQn,0,0);
+	
 }
 
 /*-----------------------------------------------------------*/
@@ -326,13 +224,15 @@ void SystemClock_Config(void)
 uint8_t SaveToRO(void){
 	BOS_Status result =BOS_OK;
 	HAL_StatusTypeDef FlashStatus =HAL_OK;
-	uint16_t add =2, temp =0;
+	uint16_t add =8, temp =0;
 	uint8_t snipBuffer[sizeof(snippet_t) + 1] ={0};
 	
 	HAL_FLASH_Unlock();
 	
 	/* Erase RO area */
-	FLASH_PageErase(RO_START_ADDRESS);
+	FlashStatus =FLASH_WaitForLastOperation((uint32_t ) HAL_FLASH_TIMEOUT_VALUE);
+	FLASH_PageErase(FLASH_BANK_1,RO_MID_ADDRESS);
+	//TOBECHECKED
 	FlashStatus =FLASH_WaitForLastOperation((uint32_t ) HAL_FLASH_TIMEOUT_VALUE);
 	if(FlashStatus != HAL_OK){
 		return pFlash.ErrorCode;
@@ -345,7 +245,9 @@ uint8_t SaveToRO(void){
 	/* Save number of modules and myID */
 	if(myID){
 		temp =(uint16_t )(N << 8) + myID;
-		HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD,RO_START_ADDRESS,temp);
+		//HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD,RO_START_ADDRESS,temp);
+		HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD,RO_START_ADDRESS,temp);
+		//TOBECHECKED
 		FlashStatus =FLASH_WaitForLastOperation((uint32_t ) HAL_FLASH_TIMEOUT_VALUE);
 		if(FlashStatus != HAL_OK){
 			return pFlash.ErrorCode;
@@ -359,9 +261,9 @@ uint8_t SaveToRO(void){
 		for(uint8_t i =1; i <= N; i++){
 			for(uint8_t j =0; j <= MaxNumOfPorts; j++){
 				if(array[i - 1][0]){
-					HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD,
-					RO_START_ADDRESS + add,array[i - 1][j]);
-					add +=2;
+                 HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD,RO_START_ADDRESS + add,array[i - 1][j]);
+				 //HALFWORD 	//TOBECHECKED
+					
 					FlashStatus =FLASH_WaitForLastOperation((uint32_t ) HAL_FLASH_TIMEOUT_VALUE);
 					if(FlashStatus != HAL_OK){
 						return pFlash.ErrorCode;
@@ -369,6 +271,7 @@ uint8_t SaveToRO(void){
 					else{
 						/* If the program operation is completed, disable the PG Bit */
 						CLEAR_BIT(FLASH->CR,FLASH_CR_PG);
+						add +=8;
 					}
 				}
 			}
@@ -380,10 +283,12 @@ uint8_t SaveToRO(void){
 	for(uint8_t s =0; s < numOfRecordedSnippets; s++){
 		if(snippets[s].cond.conditionType){
 			snipBuffer[0] =0xFE;		// A marker to separate Snippets
-			memcpy((uint8_t* )&snipBuffer[1],(uint8_t* )&snippets[s],sizeof(snippet_t));
+			memcpy((uint32_t* )&snipBuffer[1],(uint8_t* )&snippets[s],sizeof(snippet_t));
 			// Copy the snippet struct buffer (20 x numOfRecordedSnippets). Note this is assuming sizeof(snippet_t) is even.
-			for(uint8_t j =0; j < (sizeof(snippet_t) / 2); j++){
-				HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD,currentAdd,*(uint16_t* )&snipBuffer[j * 2]);
+			for(uint8_t j =0; j < (sizeof(snippet_t)/4); j++){
+				HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD,currentAdd,*(uint64_t* )&snipBuffer[j*8]);
+				//HALFWORD
+				//TOBECHECKED
 				FlashStatus =FLASH_WaitForLastOperation((uint32_t ) HAL_FLASH_TIMEOUT_VALUE);
 				if(FlashStatus != HAL_OK){
 					return pFlash.ErrorCode;
@@ -391,12 +296,14 @@ uint8_t SaveToRO(void){
 				else{
 					/* If the program operation is completed, disable the PG Bit */
 					CLEAR_BIT(FLASH->CR,FLASH_CR_PG);
-					currentAdd +=2;
+					currentAdd +=8;
 				}
 			}
 			// Copy the snippet commands buffer. Always an even number. Note the string termination char might be skipped
-			for(uint8_t j =0; j < ((strlen(snippets[s].cmd) + 1) / 2); j++){
-				HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD,currentAdd,*(uint16_t* )(snippets[s].cmd + j * 2));
+			for(uint8_t j =0; j < ((strlen(snippets[s].cmd) + 1)/4); j++){
+				HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD,currentAdd,*(uint64_t* )(snippets[s].cmd + j*4 ));
+				//HALFWORD
+				//TOBECHECKED
 				FlashStatus =FLASH_WaitForLastOperation((uint32_t ) HAL_FLASH_TIMEOUT_VALUE);
 				if(FlashStatus != HAL_OK){
 					return pFlash.ErrorCode;
@@ -404,7 +311,7 @@ uint8_t SaveToRO(void){
 				else{
 					/* If the program operation is completed, disable the PG Bit */
 					CLEAR_BIT(FLASH->CR,FLASH_CR_PG);
-					currentAdd +=2;
+					currentAdd +=8;
 				}
 			}
 		}
@@ -507,10 +414,8 @@ void Module_Peripheral_Init(void){
 	//Init a timer for 7-seg:
 	MX_TIM6_Init();
 
-	//seven segment GPIO Init:
+		//seven segment GPIO Init:
 	seven_seg_gpio_init();
-
-
 
 
 	/* Create module special task (if needed) */
@@ -518,8 +423,6 @@ void Module_Peripheral_Init(void){
 
 /*-----------------------------------------------------------*/
 /* --- H3BR6 message processing task.
- */
-/* --- Get the port for a given UART.
  */
 Module_Status Module_MessagingTask(uint16_t code,uint8_t port,uint8_t src,uint8_t dst,uint8_t shift){
 	Module_Status result = H3BR6_OK;
@@ -533,6 +436,8 @@ Module_Status Module_MessagingTask(uint16_t code,uint8_t port,uint8_t src,uint8_
 	char Unit;
 
     uint8_t length;
+
+    IndicatorLED indicator;
 
 	switch(code){
 	  case CODE_H3BR6_SevenDisplayNumber:
@@ -578,21 +483,32 @@ Module_Status Module_MessagingTask(uint16_t code,uint8_t port,uint8_t src,uint8_
 		  SevenDisplayOff();
 		  break;
 
-	}
+	  case CODE_H3BR6_SetIndicator:
+		  indicator=(uint8_t)cMessage[port - 1][shift];
+		  SetIndicator(indicator);
+		  break;
 
+	  case CODE_H3BR6_ClearIndicator:
+		  indicator=(uint8_t)cMessage[port - 1][shift];
+		  ClearIndicator(indicator);
+		  break;
+	  default:
+			result =H3BR6_ERR_UnknownMessage;
+			break;
+	}
 
 
 	return result;
 }
 
 /*-----------------------------------------------------------*/
-
-
+/* --- Get the port for a given UART. 
+ */
 uint8_t GetPort(UART_HandleTypeDef *huart){
 
-	if(huart->Instance == USART2)
+	if(huart->Instance == USART6)
 		return P1;
-	else if(huart->Instance == USART6)
+	else if(huart->Instance == USART2)
 		return P2;
 	else if(huart->Instance == USART3)
 		return P3;
@@ -600,8 +516,8 @@ uint8_t GetPort(UART_HandleTypeDef *huart){
 		return P4;
 	else if(huart->Instance == USART5)
 		return P5;
-
 	
+
 	return 0;
 }
 
@@ -610,20 +526,48 @@ uint8_t GetPort(UART_HandleTypeDef *huart){
 /* --- Register this module CLI Commands
  */
 void RegisterModuleCLICommands(void){
-	FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplayNumberCommandDefinition);
-	FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplayNumberFCommandDefinition);
-	FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplayQuantitiesCommandDefinition);
-	FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplayLetterCommandDefinition);
-	FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplaySentenceCommandDefinition);
-	FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplayMovingSentenceCommandDefinition);
-	FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplayOffCommandDefinition);
+	    FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplayNumberCommandDefinition);
+		FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplayNumberFCommandDefinition);
+		FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplayQuantitiesCommandDefinition);
+		FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplayLetterCommandDefinition);
+		FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplaySentenceCommandDefinition);
+		FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplayMovingSentenceCommandDefinition);
+		FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplayOffCommandDefinition);
+		FreeRTOS_CLIRegisterCommand(&CLI_SetIndicatorCommandDefinition);
+		FreeRTOS_CLIRegisterCommand(&CLI_ClearIndicatorCommandDefinition);
+
+
 
 }
 
 /*-----------------------------------------------------------*/
+
+
+/* Module special task function (if needed) */
+//void Module_Special_Task(void *argument){
+//
+//	/* Infinite loop */
+//	uint8_t cases; // Test variable.
+//	for(;;){
+//		/*  */
+//		switch(cases){
+//
+//
+//			default:
+//				osDelay(10);
+//				break;
+//		}
+//
+//		taskYIELD();
+//	}
+//
+//}
+
+
+/*-----------------------------------------------------------*/
 Segment_Codes get_number_code(uint8_t digit)
 {
-	Segment_Codes status = H3BR6_OK;
+	Module_Status status = H3BR6_OK;
 
 	Segment_Codes code;
 	switch(digit)
@@ -669,7 +613,7 @@ Segment_Codes get_number_code(uint8_t digit)
 
 /*-----------------------------------------------------------*/
 Segment_Codes get_letter_code(char letter){
-	Segment_Codes status = H3BR6_OK;
+	Module_Status status = H3BR6_OK;
 
 	Segment_Codes letter_code;
 	switch(letter){
@@ -840,40 +784,14 @@ Segment_Codes get_letter_code(char letter){
 /*-----------------------------------------------------------*/
 
 Segment_Codes clear_all_digits(void){
-	Segment_Codes status = H3BR6_OK;
-	for(int i=0;i<6;i++) Digit[i] = Empty;
+	Module_Status status = H3BR6_OK;
+
+	for(int i=0;i<7;i++) Digit[i] = Empty;
 	Comma_flag = 0;
 	Moving_sentence_flag = 0;
 	Moving_sentence_counter = 0;
+
 }
-/*-----------------------------------------------------------*/
-
-
-/*-----------------------------------------------------------*/
-/* Module special task function (if needed) */
-//void Module_Special_Task(void *argument){
-//
-//	/* Infinite loop */
-//	uint8_t cases; // Test variable.
-//	for(;;){
-//		/*  */
-//		switch(cases){
-//
-//
-//			default:
-//				osDelay(10);
-//				break;
-//		}
-//
-//		taskYIELD();
-//	}
-//
-//}
-
-
-/*-----------------------------------------------------------*/
-
-
 
 /*-----------------------------------------------------------*/
 
@@ -920,6 +838,10 @@ Module_Status SevenDisplayNumber(int32_t Number, uint8_t StartSevSeg)
 	case 4:
 		max_value = 99;
 		min_value = -9;
+		break;
+	case 5:
+		max_value = 9;
+		min_value = 0;
 		break;
 		// Case 5 is a special case.
 	default: break;
@@ -995,7 +917,6 @@ Module_Status SevenDisplayNumber(int32_t Number, uint8_t StartSevSeg)
 			if(signal==1 && x==index_digit_last)continue;
 			Digit[x]=Empty;
 		}
-
 
 	return status;
 
@@ -1290,7 +1211,7 @@ Module_Status SevenDisplayQuantities(float NumberF, uint8_t Res,char Unit ,uint8
 
 
 
-	   			if(Number_int>0 && Number_int<=9)
+	   			if(Number_int>=0 && Number_int<=9)
 	   			{
 	   				length= 1;
 	   			}
@@ -1337,6 +1258,7 @@ Module_Status SevenDisplayQuantities(float NumberF, uint8_t Res,char Unit ,uint8
 	   				for(int i = StartSevSeg+1; i < 6;i++)
 	   					{
 	   						if(i == index_digit_last && signal == 1) continue;
+
 	   						Digit[i] = get_number_code(Number_int % 10);
 	   						Number_int /= 10;
 	   					}
@@ -1421,7 +1343,6 @@ Module_Status SevenDisplaySentence(char *Sentence,uint16_t length,uint8_t StartS
 		{
 			letter=Sentence[x];
 
-//			Digit[StartSevSeg++]=get_letter_code(letter);
 			if( (Sentence[x] >= 'a' && Sentence[x] <= 'z') ||
 					(Sentence[x] >= 'A' && Sentence[x] <= 'Z') )
 			{
@@ -1455,9 +1376,9 @@ Module_Status SevenDisplayMovingSentence(char *Sentence,uint16_t length){
 
 	if(length <= MOVING_SENTENCE_MAX_LENGTH)
 	{
-		Moving_sentence_flag = 1;
+		Moving_sentence_index = 0;		Moving_sentence_flag = 1;
 		Moving_sentence_length = length + 6;
-		Moving_sentence_index = 0;
+
 		for(int i=0;i<6;i++) Moving_sentence_buffer[i] = Empty;
 
 		for(int i=0;i<length;i++)
@@ -1491,12 +1412,92 @@ Module_Status SevenDisplayMovingSentence(char *Sentence,uint16_t length){
 }
 /*-----------------------------------------------------------*/
 Module_Status SevenDisplayOff(void){
+
 	Module_Status status = H3BR6_OK;
 	clear_all_digits();   //Seven segment display off
 	return status;
 
+}
+/*-----------------------------------------------------------*/
+Module_Status SetIndicator( IndicatorLED indicator ){
+
+	Module_Status status = H3BR6_OK;
+
+    if(indicator==Ind1)
+    {
+		statusLed|=0x02;
+	}
+
+	else if(indicator==Ind2)
+	{
+		statusLed|=0x04;
+	}
+
+	else if(indicator==Ind3)
+	{
+		statusLed|=0x40;
+	}
+
+	else if(indicator==Ind4)
+	{
+		statusLed|=0x80;
+	}
+
+	else
+	{
+		status=H3BR6_ERROR;
+		return status;
+	}
+
+	Digit[6]=statusLed;
+	statusLed_old=statusLed;
+	if(statusLed==0xC6)
+	{
+		statusLed=offled;
+	}
+
+	return status;
 
 }
+/*-----------------------------------------------------------*/
+Module_Status ClearIndicator(IndicatorLED  indicator){
+
+	Module_Status status = H3BR6_OK;
+
+	if(indicator==Ind1)
+	{
+		statusLed_old&=0xFD;
+	}
+
+	else if(indicator==Ind2)
+	{
+		statusLed_old&=0xC2;
+	}
+
+	else if(indicator==Ind3)
+	{
+		statusLed_old&=0x86;
+	}
+
+	else if(indicator==Ind4)
+	{
+		statusLed_old&=0x46;
+	}
+
+	else
+	{
+		status=H3BR6_ERROR;
+		return status;
+	}
+
+	Digit[6]=statusLed_old;
+	statusLed=statusLed_old;
+
+	return status;
+
+}
+/*-----------------------------------------------------------*/
+
 
 /* -----------------------------------------------------------------------
  |								Commands							      |
@@ -1878,6 +1879,76 @@ portBASE_TYPE CLI_SevenDisplayOffCommand( int8_t *pcWriteBuffer, size_t xWriteBu
 
 	return pdFALSE;
 
+}
+/*-----------------------------------------------------------*/
+portBASE_TYPE CLI_SetIndicatorCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString ){
+	Module_Status status = H3BR6_OK;
+	IndicatorLED indicator;
+
+	static int8_t *pcParameterString1;
+
+	portBASE_TYPE xParameterStringLength1 =0;
+
+	static const int8_t *pcOKMessage=(int8_t* )"SetIndicator is on \r\n  \n\r";
+	static const int8_t *pcWrongParamsMessage =(int8_t* )"Wrong Params!\n\r";
+
+
+	(void )xWriteBufferLen;
+	configASSERT(pcWriteBuffer);
+
+	pcParameterString1 =(int8_t* )FreeRTOS_CLIGetParameter(pcCommandString, 1, &xParameterStringLength1 );
+	indicator =(IndicatorLED )atol((char* )pcParameterString1);
+
+
+
+	status=SetIndicator(indicator);
+
+	if(status == H3BR6_OK)
+	{
+		sprintf((char* )pcWriteBuffer,(char* )pcOKMessage,indicator);
+
+	}
+
+	else if(status == H3BR6_ERROR)
+		strcpy((char* )pcWriteBuffer,(char* )pcWrongParamsMessage);
+
+
+	return pdFALSE;
+}
+/*-----------------------------------------------------------*/
+portBASE_TYPE CLI_ClearIndicatorCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString ){
+	Module_Status status = H3BR6_OK;
+	IndicatorLED indicator;
+
+	static int8_t *pcParameterString1;
+
+	portBASE_TYPE xParameterStringLength1 =0;
+
+	static const int8_t *pcOKMessage=(int8_t* )"SetIndicator is on \r\n  \n\r";
+	static const int8_t *pcWrongParamsMessage =(int8_t* )"Wrong Params!\n\r";
+
+
+	(void )xWriteBufferLen;
+	configASSERT(pcWriteBuffer);
+
+	pcParameterString1 =(int8_t* )FreeRTOS_CLIGetParameter(pcCommandString, 1, &xParameterStringLength1 );
+	indicator =(IndicatorLED )atol((char* )pcParameterString1);
+
+
+
+	status=ClearIndicator(indicator);
+
+	if(status == H3BR6_OK)
+	{
+		sprintf((char* )pcWriteBuffer,(char* )pcOKMessage,indicator);
+
+	}
+
+	else if(status == H3BR6_ERROR)
+		strcpy((char* )pcWriteBuffer,(char* )pcWrongParamsMessage);
+
+
+	return pdFALSE;
 }
 /*-----------------------------------------------------------*/
 
