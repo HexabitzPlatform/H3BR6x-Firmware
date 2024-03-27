@@ -934,7 +934,7 @@ Module_Status SevenDisplayNumber(int32_t Number, uint8_t StartSevSeg)
 			if(signal==1 && x==index_digit_last)continue;
 			Digit[x]=Empty;
 		}
-
+		HAL_Delay(10);
 	return status;
 
 }
@@ -1111,6 +1111,7 @@ Module_Status SevenDisplayNumberF(float NumberF,uint8_t Res,uint8_t StartSevSeg)
 						if(signal==1 && x==index_digit_last)continue;
 						Digit[x]=Empty;
 						}
+						HAL_Delay(10);
 	return status;
 }
 
@@ -1289,7 +1290,7 @@ Module_Status SevenDisplayQuantities(float NumberF, uint8_t Res,char Unit ,uint8
 					}
 
 
-
+	   				HAL_Delay(10);
 		return status;
 
 }
@@ -1306,7 +1307,7 @@ Module_Status SevenDisplayLetter(char letter, uint8_t StartSevSeg){
 
 	 Digit[StartSevSeg]=get_letter_code(letter);
 
-
+		HAL_Delay(10);
 return status;
 
 
@@ -1374,7 +1375,7 @@ Module_Status SevenDisplaySentence(char *Sentence,uint16_t length,uint8_t StartS
 		}
 
 
-
+		HAL_Delay(10);
 
 	return status;
 
@@ -1423,7 +1424,7 @@ Module_Status SevenDisplayMovingSentence(char *Sentence,uint16_t length){
 		status = H3BR6_Out_Of_Range;
 		return status;
 	}
-
+	HAL_Delay(10);
 	return status;
 
 }

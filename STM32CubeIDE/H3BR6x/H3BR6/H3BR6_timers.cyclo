@@ -1,0 +1,5 @@
+..\..\H3BR6\H3BR6_timers.c:31:6:TIM_USEC_Init	1
+..\..\H3BR6\H3BR6_timers.c:67:6:MX_TIM6_Init	1
+..\..\H3BR6\H3BR6_timers.c:96:6:TIM_MSEC_Init	1
+..\..\H3BR6\H3BR6_timers.c:130:6:StartMicroDelay	3
+..\..\H3BR6\H3BR6_timers.c:148:6:StartMilliDelay	3
