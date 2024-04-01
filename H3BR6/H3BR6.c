@@ -1,5 +1,5 @@
 /*
- BitzOS (BOS) V0.3.1 - Copyright (C) 2017-2024 Hexabitz
+ BitzOS (BOS) V0.3.2 - Copyright (C) 2017-2024 Hexabitz
  All rights reserved
 
  File Name     : H3BR6.c
@@ -457,13 +457,13 @@ Module_Status Module_MessagingTask(uint16_t code,uint8_t port,uint8_t src,uint8_
     IndicatorLED indicator;
 
 	switch(code){
-	  case CODE_H3BR6_SevenDisplayNumber:
+	  case CODE_H3BRx_SevenDisplayNumber:
 	  Number=((int32_t )cMessage[port - 1][shift] ) + ((int32_t )cMessage[port - 1][1 + shift] << 8) + ((int32_t )cMessage[port - 1][2 + shift] << 16) + ((int32_t )cMessage[port - 1][3 + shift] << 24);
 	  StartSevSeg=(uint8_t)cMessage[port - 1][4+shift];
 	  SevenDisplayNumber(Number, StartSevSeg);
 	  break;
 
-	  case CODE_H3BR6_SevenDisplayNumberF:
+	  case CODE_H3BRx_SevenDisplayNumberF:
 		  Number_int=((uint32_t) cMessage[port - 1][shift] + (uint32_t) (cMessage[port - 1][1+shift] <<8) + (uint32_t) (cMessage[port - 1][2+shift]<<16) + (uint32_t) (cMessage[port - 1][3+shift] <<24));
 		  NumberF = *((float*)&Number_int);
 		  Res=(uint8_t)cMessage[port - 1][4+shift];
@@ -471,7 +471,7 @@ Module_Status Module_MessagingTask(uint16_t code,uint8_t port,uint8_t src,uint8_
 		  SevenDisplayNumberF(NumberF, Res, StartSevSeg);
 		  break;
 
-	  case CODE_H3BR6_SevenDisplayQuantities:
+	  case CODE_H3BRx_SevenDisplayQuantities:
 		  Number_int=((uint32_t) cMessage[port - 1][shift] + (uint32_t) (cMessage[port - 1][1+shift] <<8) + (uint32_t) (cMessage[port - 1][2+shift]<<16) + (uint32_t) (cMessage[port - 1][3+shift] <<24));
 		  NumberF = *((float*)&Number_int);
 		  Res=(uint8_t)cMessage[port - 1][4+shift];
@@ -480,32 +480,32 @@ Module_Status Module_MessagingTask(uint16_t code,uint8_t port,uint8_t src,uint8_
     	  SevenDisplayQuantities(NumberF, Res, Unit, StartSevSeg);
 		  break;
 
-	  case CODE_H3BR6_SevenDisplayLetter:
+	  case CODE_H3BRx_SevenDisplayLetter:
 		  StartSevSeg=(uint8_t)cMessage[port - 1][1+shift];
 		  SevenDisplayLetter((char)cMessage[port-1][shift], StartSevSeg);
 		  break;
 
-	  case CODE_H3BR6_SevenDisplaySentence:
+	  case CODE_H3BRx_SevenDisplaySentence:
 		  length=(uint8_t)cMessage[port - 1][shift];
 		  StartSevSeg=(uint8_t)cMessage[port - 1][1+shift];
 		  SevenDisplaySentence((char *)&cMessage[port-1][2 + shift], length, StartSevSeg);
 		  break;
 
-	  case CODE_H3BR6_SevenDisplayMovingSentence:
+	  case CODE_H3BRx_SevenDisplayMovingSentence:
 		  length=(uint8_t)cMessage[port - 1][shift];
 		  SevenDisplayMovingSentence((char *)&cMessage[port-1][1 + shift], length);
 		  break;
 
-	  case CODE_H3BR6_SevenDisplayOff:
+	  case CODE_H3BRx_SevenDisplayOff:
 		  SevenDisplayOff();
 		  break;
 
-	  case CODE_H3BR6_SetIndicator:
+	  case CODE_H3BRx_SetIndicator:
 		  indicator=(uint8_t)cMessage[port - 1][shift];
 		  SetIndicator(indicator);
 		  break;
 
-	  case CODE_H3BR6_ClearIndicator:
+	  case CODE_H3BRx_ClearIndicator:
 		  indicator=(uint8_t)cMessage[port - 1][shift];
 		  ClearIndicator(indicator);
 		  break;
@@ -934,7 +934,7 @@ Module_Status SevenDisplayNumber(int32_t Number, uint8_t StartSevSeg)
 			if(signal==1 && x==index_digit_last)continue;
 			Digit[x]=Empty;
 		}
-
+		HAL_Delay(10);
 	return status;
 
 }
@@ -1111,6 +1111,7 @@ Module_Status SevenDisplayNumberF(float NumberF,uint8_t Res,uint8_t StartSevSeg)
 						if(signal==1 && x==index_digit_last)continue;
 						Digit[x]=Empty;
 						}
+						HAL_Delay(10);
 	return status;
 }
 
@@ -1289,7 +1290,7 @@ Module_Status SevenDisplayQuantities(float NumberF, uint8_t Res,char Unit ,uint8
 					}
 
 
-
+	   				HAL_Delay(10);
 		return status;
 
 }
@@ -1306,7 +1307,7 @@ Module_Status SevenDisplayLetter(char letter, uint8_t StartSevSeg){
 
 	 Digit[StartSevSeg]=get_letter_code(letter);
 
-
+		HAL_Delay(10);
 return status;
 
 
@@ -1374,7 +1375,7 @@ Module_Status SevenDisplaySentence(char *Sentence,uint16_t length,uint8_t StartS
 		}
 
 
-
+		HAL_Delay(10);
 
 	return status;
 
@@ -1423,7 +1424,7 @@ Module_Status SevenDisplayMovingSentence(char *Sentence,uint16_t length){
 		status = H3BR6_Out_Of_Range;
 		return status;
 	}
-
+	HAL_Delay(10);
 	return status;
 
 }
