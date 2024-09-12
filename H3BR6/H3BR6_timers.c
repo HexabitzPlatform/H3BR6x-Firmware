@@ -95,7 +95,7 @@ void MX_TIM6_Init(void)
 	htim6.Instance = TIM6;
 	htim6.Init.Prescaler =999;
 	htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim6.Init.Period =150;// old one 959 --> 20 ms
+	htim6.Init.Period = 150 ;//48 --> 1 ms;//150 --> 3.1 ms;// old one 959 --> 20 ms //720 --> 15 ms // 240 --> 5ms
 	HAL_TIM_Base_Init(&htim6);
 
 	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;

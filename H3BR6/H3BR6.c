@@ -210,8 +210,7 @@ void SystemClock_Config(void){
 	  PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
 	  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
 	  HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
-
-
+	IRQn_Type SysTick_IRQn;
 	  HAL_NVIC_SetPriority(SysTick_IRQn,0,0);
 	
 }
@@ -803,7 +802,7 @@ Segment_Codes get_letter_code(char letter){
 Segment_Codes clear_all_digits(void){
 	Module_Status status = H3BR6_OK;
 
-	for(int i=0;i<7;i++) Digit[i] = Empty;
+	for(int i=0;i<6;i++) Digit[i] = Empty;
 	Comma_flag = 0;
 	Moving_sentence_flag = 0;
 	Moving_sentence_counter = 0;
@@ -1343,8 +1342,10 @@ Module_Status SevenDisplaySentence(char *Sentence,uint16_t length,uint8_t StartS
 			break;
 		case 4:
 			max_length=2;
+			break ;
 		case 5:
 			max_length=1;
+			break;
 		default:
 			break;
 
