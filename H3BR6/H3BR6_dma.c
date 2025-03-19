@@ -11,7 +11,7 @@
 #include "BOS.h"
 
 /* Variables ---------------------------------------------------------*/
-DMA_HandleTypeDef *UARTDMAHandler[NumOfPorts];
+DMA_HandleTypeDef *UARTDMAHandler[5];
 CRC_HandleTypeDef hcrc;
 /*-----------------------------------------------------------*/
 
