@@ -247,7 +247,7 @@ void CheckAttachedButtons(void) {
 					buttonDblClickedCallback(i);
 				}
 				break;
-
+//
 //			case PRESSED_FOR_X1_SEC:
 //				if (!delayButtonStateReset
 //						&& (button[i].events & BUTTON_EVENT_PRESSED_FOR_X1_SEC)) {
@@ -303,7 +303,7 @@ void CheckAttachedButtons(void) {
 }
 
 /*-----------------------------------------------------------*/
-
+//
 ///* --- Check for timed press button events
 // */
 //BOS_Status CheckForTimedButtonPress(uint8_t port) {
@@ -437,15 +437,6 @@ BOS_Status AddPortButton(ButtonType_e buttonType, uint8_t port) {
 	return result;
 }
 
-BOS_Status AddButton(uint8_t port, ButtonType_e buttonType, ButtonState_e buttonState)
-{
-	BOS_Status Status = BOS_OK;
-
-	AddPortButton(buttonType, port);
-	SetButtonEvents(port, buttonState, 0);
-
-	return BOS_OK;
-}
 /*-----------------------------------------------------------*/
 
 /* --- Undefine a button attached to one of array ports and restore the port to default state
@@ -504,15 +495,36 @@ BOS_Status RemovePortButton(uint8_t port) {
 #ifdef _Usart6	
 		MX_USART6_UART_Init();
 #endif
+	/*} else if (huart->Instance == USART7) {
+#ifdef _Usart7
+		MX_USART7_UART_Init();
+#endif
+	} else if (huart->Instance == USART8) {
+#ifdef _Usart8
+		MX_USART8_UART_Init();
+#endif*/
+		//TOBECHECKED
 	} else
 		result = BOS_ERROR;
 
-	/* 4. free port */
+	/* 4. Start scanning this port */
 	portStatus[port] = FREE;
-	/* Setup UART DMA */
-	DMA_MSG_RX_Setup(huart,UARTDMAHandler[port - 1]);
+	/* Read this port again */
+	HAL_UART_Receive_IT(huart, (uint8_t*) &cRxedChar, 1);
 
 	return result;
+}
+
+/*-----------------------------------------------------------*/
+
+BOS_Status AddButton(uint8_t port, ButtonType_e buttonType, ButtonState_e buttonState)
+{
+	BOS_Status Status = BOS_OK;
+
+	AddPortButton(buttonType, port);
+	SetButtonEvents(port, buttonState, 0);
+
+	return BOS_OK;
 }
 
 /*-----------------------------------------------------------*/
@@ -525,6 +537,7 @@ BOS_Status RemovePortButton(uint8_t port) {
  released_x1sec, released_x1sec, released_x1sec: Release time for events Y1, Y2 and Y3 in seconds. Use 0 to disable the event.
  mode: BUTTON_EVENT_MODE_CLEAR to clear events marked with 0, BUTTON_EVENT_MODE_OR to OR events marked with 1 with existing events.
  */
+
 //BOS_Status SetButtonEvents(uint8_t port, uint8_t clicked, uint8_t dbl_clicked,
 //		uint8_t pressed_x1sec, uint8_t pressed_x2sec, uint8_t pressed_x3sec,
 //		uint8_t released_y1sec, uint8_t released_y2sec, uint8_t released_y3sec,
@@ -642,7 +655,6 @@ BOS_Status SetButtonEvents(uint8_t port, ButtonState_e buttonState, uint8_t mode
 
 	return result;
 }
-
 
 /* ADC init function */
 
