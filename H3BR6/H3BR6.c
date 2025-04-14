@@ -26,23 +26,23 @@ UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart5;
 UART_HandleTypeDef huart6;
 
-Segment_Codes Digit[7] = {Empty}; //Digit[0]: LSD, Digit[6]: MSD
-IndicatorLED statusLed=offled;     //for indicator leds
-IndicatorLED statusLed_old=onled;  //for indicator leds
+SegmentCodes Digit[7] ={Empty};   /* Digit[0]: LSD, Digit[6]: MSD */
+IndicatorLED LedStatus =OFF_LED;
+IndicatorLED OldLedStatus =ON_LED;
 
 /* Module Parameters */
 ModuleParam_t ModuleParam[NUM_MODULE_PARAMS] ={0};
 
 /* Private variables ---------------------------------------------------------*/
-uint8_t Res_it;          //A global variable to specify the index of the comma
-uint8_t StartSevSeg_it;  //A global variable to specify the index of the comma
-uint8_t Moving_sentence_buffer[MOVING_SENTENCE_MAX_LENGTH + 6] = {0};
-uint8_t Moving_sentence_length = 0;
-uint8_t Moving_sentence_flag = 0;
-uint8_t Moving_sentence_index = 0;
-uint32_t Moving_sentence_counter = 0;
+uint8_t CommaIndex;     /* A global variable to specify the index of the comma */
+uint8_t StartSevSeg;
+uint8_t MovingSentenceFlag = 0;
+uint8_t MovingSentenceIndex = 0;
+uint8_t MovingSentenceLength = 0;
+uint8_t MovingSentenceBuffer[MOVING_SENTENCE_MAX_LENGTH + 6] = {0};
+uint32_t MovingSentenceCounter = 0;
+int CommaFlag=0;        /* Activate a flag when a float number is shown */
 
-int Comma_flag=0;        //Activate a flag when a float number is shown
 /* Private function prototypes *********************************************/
 void MX_TIM6_Init(void);
 void Module_Peripheral_Init(void);
@@ -50,9 +50,9 @@ uint8_t ClearROtopology(void);
 Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uint8_t dst, uint8_t shift);
 
 /* Local function prototypes ***********************************************/
-Segment_Codes GetNumberCode(uint8_t digit);
-Segment_Codes GetLetterCode(char letter);
-Segment_Codes ClearAllDigits(void);
+SegmentCodes GetNumberCode(uint8_t digit);
+SegmentCodes GetLetterCode(char letter);
+SegmentCodes ClearAllDigits(void);
 
 /* Create CLI commands *****************************************************/
 portBASE_TYPE CLI_SevenDisplayNumberCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
@@ -543,8 +543,9 @@ void SetupPortForRemoteBootloaderUpdate(uint8_t port){
 	/* The CLI port RXNE interrupt might be disabled so enable here again to be sure */
 	__HAL_UART_ENABLE_IT(huart,UART_IT_RXNE);
 }
-/* --- H3BR6 module initialization.
- */
+
+/***************************************************************************/
+/* H3BR6 module initialization */
 void Module_Peripheral_Init(void){
 
 	/* Array ports */
@@ -554,13 +555,10 @@ void Module_Peripheral_Init(void){
 	MX_USART5_UART_Init();
 	MX_USART6_UART_Init();
 
-	//Init a timer for 7-seg:
 	MX_TIM6_Init();
-
-		//seven segment GPIO Init:
 	SevenSegGPIOInit();
 
-	//Circulating DMA Channels ON All Module
+	/* Circulating DMA Channels ON All Module */
 	 for(int i=1;i<=NUM_OF_PORTS;i++)
 		{
 		  if(GetUart(i)==&huart1)
@@ -576,12 +574,10 @@ void Module_Peripheral_Init(void){
 		  else if(GetUart(i)==&huart6)
 				   { dmaIndex[i-1]=&(DMA1_Channel6->CNDTR); }
 		}
-
 }
 
-/*-----------------------------------------------------------*/
-/* --- H3BR6 message processing task.
- */
+/***************************************************************************/
+/* H3BR6 message processing task */
 Module_Status Module_MessagingTask(uint16_t code,uint8_t port,uint8_t src,uint8_t dst,uint8_t shift){
 	Module_Status result = H3BR6_OK;
 
@@ -659,9 +655,8 @@ Module_Status Module_MessagingTask(uint16_t code,uint8_t port,uint8_t src,uint8_
 	return result;
 }
 
-/*-----------------------------------------------------------*/
-/* --- Get the port for a given UART. 
- */
+/***************************************************************************/
+/* Get the port for a given UART */
 uint8_t GetPort(UART_HandleTypeDef *huart){
 
 	if(huart->Instance == USART6)
@@ -675,13 +670,11 @@ uint8_t GetPort(UART_HandleTypeDef *huart){
 	else if(huart->Instance == USART5)
 		return P5;
 	
-
 	return 0;
 }
 
-/*-----------------------------------------------------------*/
-/* --- Register this module CLI Commands
- */
+/***************************************************************************/
+/* Register this module CLI Commands */
 void RegisterModuleCLICommands(void){
 	    FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplayNumberCommandDefinition);
 		FreeRTOS_CLIRegisterCommand(&CLI_SevenDisplayNumberFCommandDefinition);
@@ -718,49 +711,49 @@ Module_Status GetModuleParameter(uint8_t paramIndex,float *value){
 /***************************************************************************/
 /****************************** Local Functions ****************************/
 /***************************************************************************/
-Segment_Codes GetNumberCode(uint8_t digit){
+SegmentCodes GetNumberCode(uint8_t digit){
 	Module_Status status =H3BR6_OK;
 
-	Segment_Codes code;
+	SegmentCodes code;
 	switch(digit){
 		case 0:
-			code =zero_number;
+			code =ZERO_NUMBER;
 			break;
 
 		case 1:
-			code =one_number;
+			code =ONE_NUMBER;
 			break;
 
 		case 2:
-			code =two_number;
+			code =TWO_NUMBER;
 			break;
 
 		case 3:
-			code =three_number;
+			code =THREE_NUMBER;
 			break;
 
 		case 4:
-			code =four_number;
+			code =FOUR_NUMBER;
 			break;
 
 		case 5:
-			code =five_number;
+			code =FIVE_NUMBER;
 			break;
 
 		case 6:
-			code =six_number;
+			code =SIX_NUMBER;
 			break;
 
 		case 7:
-			code =seven_number;
+			code =SEVEN_NUMBER;
 			break;
 
 		case 8:
-			code =eight_number;
+			code =EIGHT_NUMBER;
 			break;
 
 		case 9:
-			code =nine_number;
+			code =NINE_NUMBER;
 			break;
 
 		default:
@@ -771,221 +764,222 @@ Segment_Codes GetNumberCode(uint8_t digit){
 	return code;
 }
 
-/*-----------------------------------------------------------*/
-Segment_Codes GetLetterCode(char letter){
+/***************************************************************************/
+/* */
+SegmentCodes GetLetterCode(char letter){
 	Module_Status status =H3BR6_OK;
 
-	Segment_Codes letter_code;
+	SegmentCodes letter_code;
 	switch(letter){
 
 		/* Capital Letters *********************************************************/
 		case 'A':
-			letter_code =A_letter;
+			letter_code =A_LETTER;
 			break;
 
 		case 'B':
-			letter_code =B_letter;
+			letter_code =B_LETTER;
 			break;
 
 		case 'C':
-			letter_code =C_letter;
+			letter_code =C_LETTER;
 			break;
 
 		case 'D':
-			letter_code =D_letter;
+			letter_code =D_LETTER;
 			break;
 
 		case 'E':
-			letter_code =E_letter;
+			letter_code =E_LETTER;
 			break;
 
 		case 'F':
-			letter_code =F_letter;
+			letter_code =F_LETTER;
 			break;
 
 		case 'G':
-			letter_code =G_letter;
+			letter_code =G_LETTER;
 			break;
 
 		case 'H':
-			letter_code =H_letter;
+			letter_code =H_LETTER;
 			break;
 
 		case 'I':
-			letter_code =I_letter;
+			letter_code =I_LETTER;
 			break;
 
 		case 'J':
-			letter_code =J_letter;
+			letter_code =J_LETTER;
 			break;
 
 		case 'K':
-			letter_code =K_letter;
+			letter_code =K_LETTER;
 			break;
 
 		case 'L':
-			letter_code =L_letter;
+			letter_code =L_LETTER;
 			break;
 
 		case 'M':
-			letter_code =M_letter;
+			letter_code =M_LETTER;
 			break;
 
 		case 'N':
-			letter_code =N_letter;
+			letter_code =N_LETTER;
 			break;
 
 		case 'O':
-			letter_code =O_letter;
+			letter_code =O_LETTER;
 			break;
 
 		case 'P':
-			letter_code =P_letter;
+			letter_code =P_LETTER;
 			break;
 
 		case 'Q':
-			letter_code =Q_letter;
+			letter_code =Q_LETTER;
 			break;
 
 		case 'R':
-			letter_code =R_letter;
+			letter_code =R_LETTER;
 			break;
 
 		case 'S':
-			letter_code =S_letter;
+			letter_code =S_LETTER;
 			break;
 
 		case 'T':
-			letter_code =T_letter;
+			letter_code =T_LETTER;
 			break;
 
 		case 'U':
-			letter_code =U_letter;
+			letter_code =U_LETTER;
 			break;
 
 		case 'V':
-			letter_code =V_letter;
+			letter_code =V_LETTER;
 			break;
 
 		case 'W':
-			letter_code =W_letter;
+			letter_code =W_LETTER;
 			break;
 
 		case 'X':
-			letter_code =X_letter;
+			letter_code =X_LETTER;
 			break;
 
 		case 'Y':
-			letter_code =Y_letter;
+			letter_code =Y_LETTER;
 			break;
 
 		case 'Z':
-			letter_code =Z_letter;
+			letter_code =Z_LETTER;
 			break;
 
 			/* Small Letters ***********************************************************/
 		case 'a':
-			letter_code =a_letter;
+			letter_code =a_LETTER;
 			break;
 
 		case 'b':
-			letter_code =b_letter;
+			letter_code =b_LETTER;
 			break;
 
 		case 'c':
-			letter_code =c_letter;
+			letter_code =c_LETTER;
 			break;
 
 		case 'd':
-			letter_code =d_letter;
+			letter_code =d_LETTER;
 			break;
 
 		case 'e':
-			letter_code =e_letter;
+			letter_code =e_LETTER;
 			break;
 
 		case 'f':
-			letter_code =f_letter;
+			letter_code =f_LETTER;
 			break;
 
 		case 'g':
-			letter_code =g_letter;
+			letter_code =g_LETTER;
 			break;
 
 		case 'h':
-			letter_code =h_letter;
+			letter_code =h_LETTER;
 			break;
 
 		case 'i':
-			letter_code =i_letter;
+			letter_code =i_LETTER;
 			break;
 
 		case 'j':
-			letter_code =j_letter;
+			letter_code =j_LETTER;
 			break;
 
 		case 'k':
-			letter_code =k_letter;
+			letter_code =k_LETTER;
 			break;
 
 		case 'l':
-			letter_code =l_letter;
+			letter_code =l_LETTER;
 			break;
 
 		case 'm':
-			letter_code =m_letter;
+			letter_code =m_LETTER;
 			break;
 
 		case 'n':
-			letter_code =n_letter;
+			letter_code =n_LETTER;
 			break;
 
 		case 'o':
-			letter_code =o_letter;
+			letter_code =o_LETTER;
 			break;
 
 		case 'p':
-			letter_code =p_letter;
+			letter_code =p_LETTER;
 			break;
 
 		case 'q':
-			letter_code =q_letter;
+			letter_code =q_LETTER;
 			break;
 
 		case 'r':
-			letter_code =r_letter;
+			letter_code =r_LETTER;
 			break;
 
 		case 's':
-			letter_code =s_letter;
+			letter_code =s_LETTER;
 			break;
 
 		case 't':
-			letter_code =t_letter;
+			letter_code =t_LETTER;
 			break;
 
 		case 'u':
-			letter_code =u_letter;
+			letter_code =u_LETTER;
 			break;
 
 		case 'v':
-			letter_code =v_letter;
+			letter_code =v_LETTER;
 			break;
 
 		case 'w':
-			letter_code =w_letter;
+			letter_code =w_LETTER;
 			break;
 
 		case 'x':
-			letter_code =x_letter;
+			letter_code =x_LETTER;
 			break;
 
 		case 'y':
-			letter_code =y_letter;
+			letter_code =y_LETTER;
 			break;
 
 		case 'z':
-			letter_code =z_letter;
+			letter_code =z_LETTER;
 			break;
 
 		default:
@@ -994,16 +988,18 @@ Segment_Codes GetLetterCode(char letter){
 	}
 	return letter_code;
 }
-/*-----------------------------------------------------------*/
 
-Segment_Codes ClearAllDigits(void){
+/***************************************************************************/
+/* */
+SegmentCodes ClearAllDigits(void){
 	Module_Status status =H3BR6_OK;
 
 	for(int i =0; i < 6; i++)
 		Digit[i] =Empty;
-	Comma_flag =0;
-	Moving_sentence_flag =0;
-	Moving_sentence_counter =0;
+
+	CommaFlag =0;
+	MovingSentenceFlag =0;
+	MovingSentenceCounter =0;
 }
 
 /***************************************************************************/
@@ -1054,7 +1050,6 @@ Module_Status SevenDisplayNumber(int32_t Number,uint8_t StartSevSeg){
 			min_value =0;
 			break;
 
-			// Case 5 is a special case.
 		default:
 			break;
 	}
@@ -1099,7 +1094,7 @@ Module_Status SevenDisplayNumber(int32_t Number,uint8_t StartSevSeg){
 
 	index_digit_last =length + StartSevSeg;
 	if(signal == 1){
-		Digit[index_digit_last] =Symbol_minus;
+		Digit[index_digit_last] =SYMBOL_MINUS;
 		Digit[index_digit_last + 1] =Empty;
 	}
 
@@ -1121,6 +1116,7 @@ Module_Status SevenDisplayNumber(int32_t Number,uint8_t StartSevSeg){
 }
 
 /***************************************************************************/
+/* */
 Module_Status SevenDisplayNumberF(float NumberF,uint8_t Res,uint8_t StartSevSeg){
 	Module_Status status =H3BR6_OK;
 	ClearAllDigits();   //Seven segment display off
@@ -1133,16 +1129,16 @@ Module_Status SevenDisplayNumberF(float NumberF,uint8_t Res,uint8_t StartSevSeg)
 	uint8_t length;
 	uint8_t zero_flag =0;
 
-	Res_it =Res;
-	StartSevSeg_it =StartSevSeg;
-	Comma_flag =1;
+	CommaIndex =Res;
+	StartSevSeg =StartSevSeg;
+	CommaFlag =1;
 
 	if((uint32_t )NumberF == 0)
 		zero_flag =1;
 
 	if(!(StartSevSeg >= 0 && StartSevSeg <= 5)){
 		status =H3BR6_ERR_WrongParams;
-		Comma_flag =0;
+		CommaFlag =0;
 
 		return status;
 	}
@@ -1185,19 +1181,19 @@ Module_Status SevenDisplayNumberF(float NumberF,uint8_t Res,uint8_t StartSevSeg)
 
 	if(StartSevSeg == 4 && ((NumberF < 0 || NumberF > 9.9) || (NumberF > 0 || NumberF < 0.9))){
 		status =H3BR6_NUMBER_IS_OUT_OF_RANGE;
-		Comma_flag =0;
+		CommaFlag =0;
 		return status;
 	}
 
 	if(StartSevSeg == 5 && (NumberF > 9 || NumberF < 0)){
 		status =H3BR6_NUMBER_IS_OUT_OF_RANGE;
-		Comma_flag =0;
+		CommaFlag =0;
 		return status;
 	}
 
 	if(NumberF > max_value_comma || NumberF < min_value_comma){
 		status =H3BR6_NUMBER_IS_OUT_OF_RANGE;
-		Comma_flag =0;
+		CommaFlag =0;
 		return status;
 	}
 
@@ -1209,7 +1205,7 @@ Module_Status SevenDisplayNumberF(float NumberF,uint8_t Res,uint8_t StartSevSeg)
 	switch(Res){
 		case 0:
 			Number_int =(uint32_t )NumberF;
-			Comma_flag =0;
+			CommaFlag =0;
 			break;
 
 		case 1:
@@ -1281,7 +1277,7 @@ Module_Status SevenDisplayNumberF(float NumberF,uint8_t Res,uint8_t StartSevSeg)
 	else
 		index_digit_last =Res + 1 + StartSevSeg;
 	if(signal == 1){
-		Digit[index_digit_last] =Symbol_minus;
+		Digit[index_digit_last] =SYMBOL_MINUS;
 		Digit[index_digit_last + 1] =Empty;
 	}
 
@@ -1302,6 +1298,7 @@ Module_Status SevenDisplayNumberF(float NumberF,uint8_t Res,uint8_t StartSevSeg)
 }
 
 /***************************************************************************/
+/* */
 Module_Status SevenDisplayQuantities(float NumberF,uint8_t Res,char Unit,uint8_t StartSevSeg){
 	Module_Status status =H3BR6_OK;
 	ClearAllDigits();   //Seven segment display off
@@ -1314,16 +1311,16 @@ Module_Status SevenDisplayQuantities(float NumberF,uint8_t Res,char Unit,uint8_t
 	uint8_t length;
 	uint8_t zero_flag =0;
 
-	Res_it =Res;
-	StartSevSeg_it =StartSevSeg + 1;
-	Comma_flag =1;
+	CommaIndex =Res;
+	StartSevSeg =StartSevSeg + 1;
+	CommaFlag =1;
 
 	if((uint32_t )NumberF == 0)
 		zero_flag =1;
 
 	if(!(StartSevSeg >= 0 && StartSevSeg <= 5)){
 		status =H3BR6_ERR_WrongParams;
-		Comma_flag =0;
+		CommaFlag =0;
 		return status;
 	}
 
@@ -1354,7 +1351,6 @@ Module_Status SevenDisplayQuantities(float NumberF,uint8_t Res,char Unit,uint8_t
 			break;
 
 		case 5:
-			// Case 5 is a special case.
 			break;
 
 		default:
@@ -1364,13 +1360,13 @@ Module_Status SevenDisplayQuantities(float NumberF,uint8_t Res,char Unit,uint8_t
 
 	if(StartSevSeg == 5){
 		status =H3BR6_NUMBER_IS_OUT_OF_RANGE;
-		Comma_flag =0;
+		CommaFlag =0;
 		return status;
 	}
 
 	if(NumberF > max_value_comma || NumberF < min_value_comma){
 		status =H3BR6_NUMBER_IS_OUT_OF_RANGE;
-		Comma_flag =0;
+		CommaFlag =0;
 		return status;
 	}
 
@@ -1382,7 +1378,7 @@ Module_Status SevenDisplayQuantities(float NumberF,uint8_t Res,char Unit,uint8_t
 	switch(Res){
 		case 0:
 			Number_int =(uint32_t )NumberF;
-			Comma_flag =0;
+			CommaFlag =0;
 			break;
 
 		case 1:
@@ -1454,7 +1450,7 @@ Module_Status SevenDisplayQuantities(float NumberF,uint8_t Res,char Unit,uint8_t
 	else
 		index_digit_last =Res + 2 + StartSevSeg;
 	if(signal == 1){
-		Digit[index_digit_last] =Symbol_minus;
+		Digit[index_digit_last] =SYMBOL_MINUS;
 		Digit[index_digit_last + 1] =Empty;
 	}
 
@@ -1480,9 +1476,11 @@ Module_Status SevenDisplayQuantities(float NumberF,uint8_t Res,char Unit,uint8_t
 }
 
 /***************************************************************************/
+/* */
 Module_Status SevenDisplayLetter(char letter,uint8_t StartSevSeg){
 	Module_Status status =H3BR6_OK;
-	ClearAllDigits();   //Seven segment display off
+
+	ClearAllDigits();
 
 	if(!(StartSevSeg >= 0 && StartSevSeg <= 5)){
 		status =H3BR6_ERR_WrongParams;
@@ -1499,7 +1497,8 @@ Module_Status SevenDisplayLetter(char letter,uint8_t StartSevSeg){
 /***************************************************************************/
 Module_Status SevenDisplaySentence(char *Sentence,uint16_t length,uint8_t StartSevSeg){
 	Module_Status status =H3BR6_OK;
-	ClearAllDigits();   //Seven segment display off
+
+	ClearAllDigits();
 
 	uint16_t max_length;
 	char letter;
@@ -1565,9 +1564,9 @@ Module_Status SevenDisplaySentence(char *Sentence,uint16_t length,uint8_t StartS
 
 /***************************************************************************/
 Module_Status SevenDisplayMovingSentence(char *Sentence,uint16_t length){
-
 	Module_Status status =H3BR6_OK;
-	ClearAllDigits();   //Seven segment display off
+
+	ClearAllDigits();
 
 	if(length == 0 || Sentence == NULL){
 		status =H3BR6_ERROR;
@@ -1575,24 +1574,24 @@ Module_Status SevenDisplayMovingSentence(char *Sentence,uint16_t length){
 	}
 
 	if(length <= MOVING_SENTENCE_MAX_LENGTH){
-		Moving_sentence_index =0;
-		Moving_sentence_flag =1;
-		Moving_sentence_length =length + 6;
+		MovingSentenceIndex =0;
+		MovingSentenceFlag =1;
+		MovingSentenceLength =length + 6;
 
 		for(int i =0; i < 6; i++)
-			Moving_sentence_buffer[i] =Empty;
+			MovingSentenceBuffer[i] =Empty;
 
 		for(int i =0; i < length; i++){
 			if((Sentence[i] >= 'a' && Sentence[i] <= 'z') || (Sentence[i] >= 'A' && Sentence[i] <= 'Z')){
-				Moving_sentence_buffer[i + 6] =GetLetterCode(Sentence[i]);
+				MovingSentenceBuffer[i + 6] =GetLetterCode(Sentence[i]);
 			}
 
 			else if(Sentence[i] >= '0' && Sentence[i] <= '9'){
-				Moving_sentence_buffer[i + 6] =GetNumberCode(Sentence[i] - '0');
+				MovingSentenceBuffer[i + 6] =GetNumberCode(Sentence[i] - '0');
 			}
 
 			else{
-				Moving_sentence_buffer[i + 6] =Empty;
+				MovingSentenceBuffer[i + 6] =Empty;
 			}
 		}
 	}
@@ -1608,32 +1607,32 @@ Module_Status SevenDisplayMovingSentence(char *Sentence,uint16_t length){
 
 /***************************************************************************/
 Module_Status SevenDisplayOff(void){
-
 	Module_Status status =H3BR6_OK;
-	ClearAllDigits();   //Seven segment display off
+
+	ClearAllDigits();
+
 	return status;
 
 }
 
 /***************************************************************************/
 Module_Status SetIndicator(IndicatorLED indicator){
-
 	Module_Status status =H3BR6_OK;
 
 	if(indicator == Ind1){
-		statusLed |=0x02;
+		LedStatus |=0x02;
 	}
 
 	else if(indicator == Ind2){
-		statusLed |=0x04;
+		LedStatus |=0x04;
 	}
 
 	else if(indicator == Ind3){
-		statusLed |=0x40;
+		LedStatus |=0x40;
 	}
 
 	else if(indicator == Ind4){
-		statusLed |=0x80;
+		LedStatus |=0x80;
 	}
 
 	else{
@@ -1641,10 +1640,10 @@ Module_Status SetIndicator(IndicatorLED indicator){
 		return status;
 	}
 
-	Digit[6] =statusLed;
-	statusLed_old =statusLed;
-	if(statusLed == 0xC6){
-		statusLed =offled;
+	Digit[6] =LedStatus;
+	OldLedStatus =LedStatus;
+	if(LedStatus == 0xC6){
+		LedStatus =OFF_LED;
 	}
 
 	return status;
@@ -1653,23 +1652,22 @@ Module_Status SetIndicator(IndicatorLED indicator){
 
 /***************************************************************************/
 Module_Status ClearIndicator(IndicatorLED indicator){
-
 	Module_Status status =H3BR6_OK;
 
 	if(indicator == Ind1){
-		statusLed_old &=0xFD;
+		OldLedStatus &=0xFD;
 	}
 
 	else if(indicator == Ind2){
-		statusLed_old &=0xC2;
+		OldLedStatus &=0xC2;
 	}
 
 	else if(indicator == Ind3){
-		statusLed_old &=0x86;
+		OldLedStatus &=0x86;
 	}
 
 	else if(indicator == Ind4){
-		statusLed_old &=0x46;
+		OldLedStatus &=0x46;
 	}
 
 	else{
@@ -1677,8 +1675,8 @@ Module_Status ClearIndicator(IndicatorLED indicator){
 		return status;
 	}
 
-	Digit[6] =statusLed_old;
-	statusLed =statusLed_old;
+	Digit[6] =OldLedStatus;
+	LedStatus =OldLedStatus;
 
 	return status;
 
