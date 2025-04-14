@@ -1619,19 +1619,19 @@ Module_Status SevenDisplayOff(void){
 Module_Status SetIndicator(IndicatorLED indicator){
 	Module_Status status =H3BR6_OK;
 
-	if(indicator == Ind1){
+	if(indicator == INDICATOR_1){
 		LedStatus |=0x02;
 	}
 
-	else if(indicator == Ind2){
+	else if(indicator == INDICATOR_2){
 		LedStatus |=0x04;
 	}
 
-	else if(indicator == Ind3){
+	else if(indicator == INDICATOR_3){
 		LedStatus |=0x40;
 	}
 
-	else if(indicator == Ind4){
+	else if(indicator == INDICATOR_4){
 		LedStatus |=0x80;
 	}
 
@@ -1654,19 +1654,19 @@ Module_Status SetIndicator(IndicatorLED indicator){
 Module_Status ClearIndicator(IndicatorLED indicator){
 	Module_Status status =H3BR6_OK;
 
-	if(indicator == Ind1){
+	if(indicator == INDICATOR_1){
 		OldLedStatus &=0xFD;
 	}
 
-	else if(indicator == Ind2){
+	else if(indicator == INDICATOR_2){
 		OldLedStatus &=0xC2;
 	}
 
-	else if(indicator == Ind3){
+	else if(indicator == INDICATOR_3){
 		OldLedStatus &=0x86;
 	}
 
-	else if(indicator == Ind4){
+	else if(indicator == INDICATOR_4){
 		OldLedStatus &=0x46;
 	}
 

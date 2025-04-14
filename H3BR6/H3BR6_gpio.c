@@ -54,20 +54,20 @@ void SevenSegGPIOInit(void){
 	  __HAL_RCC_GPIOB_CLK_ENABLE();
 
 	  /*Configure GPIO pin Output Level */
-	  HAL_GPIO_WritePin(GPIOA, Seven_seg_a_Pin |Seven_seg_f_Pin|Seven_seg_b_Pin|Seven_seg_c_Pin
-	                          |Seven_seg_g_Pin, GPIO_PIN_RESET);
+	  HAL_GPIO_WritePin(GPIOA, SEVEN_SEG_A_PIN |SEVEN_SEG_F_PIN|SEVEN_SEG_B_PIN|SEVEN_SEG_C_PIN
+	                          |SEVEN_SEG_G_PIN, GPIO_PIN_RESET);
 
-	  HAL_GPIO_WritePin(GPIOA,Seven_seg_Enable_4_Pin|Seven_seg_Enable_2_Pin|Seven_seg_Enable_6_Pin, GPIO_PIN_SET);
+	  HAL_GPIO_WritePin(GPIOA,SEVEN_SEG_ENABLE_4_PIN|SEVEN_SEG_ENABLE_2_PIN|SEVEN_SEG_ENABLE_6_PIN, GPIO_PIN_SET);
 
 	  /*Configure GPIO pin Output Level */
-	  HAL_GPIO_WritePin(GPIOB, Seven_seg_DP_Pin|Seven_seg_d_Pin|Seven_seg_e_Pin, GPIO_PIN_RESET);
+	  HAL_GPIO_WritePin(GPIOB, SEVEN_SEG_DP_PIN|SEVEN_SEG_D_PIN|SEVEN_SEG_E_PIN, GPIO_PIN_RESET);
 
-	  HAL_GPIO_WritePin(GPIOB,Seven_seg_Enable_1_Pin|Seven_seg_Enable_3_Pin|Seven_seg_Enable_5_Pin| C_LED_Pin,GPIO_PIN_SET);
+	  HAL_GPIO_WritePin(GPIOB,SEVEN_SEG_ENABLE_1_PIN|SEVEN_SEG_ENABLE_3_PIN|SEVEN_SEG_ENABLE_5_PIN| COMMON_LED_PIN,GPIO_PIN_SET);
 
 	  /*Configure GPIO pins : A_Pin F_Pin B_Pin C_Pin
 	                           G_Pin CA3_Pin CA4_Pin CA1_Pin */
-	  GPIO_InitStruct.Pin = Seven_seg_a_Pin|Seven_seg_f_Pin|Seven_seg_b_Pin|Seven_seg_c_Pin
-	                          |Seven_seg_g_Pin|Seven_seg_Enable_4_Pin|Seven_seg_Enable_2_Pin|Seven_seg_Enable_6_Pin;
+	  GPIO_InitStruct.Pin = SEVEN_SEG_A_PIN|SEVEN_SEG_F_PIN|SEVEN_SEG_B_PIN|SEVEN_SEG_C_PIN
+	                          |SEVEN_SEG_G_PIN|SEVEN_SEG_ENABLE_4_PIN|SEVEN_SEG_ENABLE_2_PIN|SEVEN_SEG_ENABLE_6_PIN;
 	  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	  GPIO_InitStruct.Pull = GPIO_NOPULL;
 	  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -75,8 +75,8 @@ void SevenSegGPIOInit(void){
 
 	  /*Configure GPIO pins : DP_Pin D_Pin E_Pin CA6_Pin
 	                           CA5_Pin  CA2_Pin */
-	  GPIO_InitStruct.Pin = Seven_seg_DP_Pin|Seven_seg_d_Pin|Seven_seg_e_Pin|Seven_seg_Enable_1_Pin
-	                          |Seven_seg_Enable_3_Pin|Seven_seg_Enable_5_Pin|C_LED_Pin;
+	  GPIO_InitStruct.Pin = SEVEN_SEG_DP_PIN|SEVEN_SEG_D_PIN|SEVEN_SEG_E_PIN|SEVEN_SEG_ENABLE_1_PIN
+	                          |SEVEN_SEG_ENABLE_3_PIN|SEVEN_SEG_ENABLE_5_PIN|COMMON_LED_PIN;
 	  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	  GPIO_InitStruct.Pull = GPIO_NOPULL;
 	  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

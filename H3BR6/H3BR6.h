@@ -87,52 +87,52 @@
 #define	USART6_AF			GPIO_AF8_USART6
 
 /* Module-specific Hardware Definitions */
-/* Pins For SevenSegment*/
-#define Seven_seg_a_Pin 				GPIO_PIN_1
-#define Seven_seg_a_GPIO_Port 			GPIOA
+/* Pins For Seven Segment*/
+#define SEVEN_SEG_A_PIN 				GPIO_PIN_1
+#define SEVEN_SEG_A_GPIO_PORT 			GPIOA
 
-#define Seven_seg_b_Pin 				GPIO_PIN_5
-#define Seven_seg_b_GPIO_Port 			GPIOA
+#define SEVEN_SEG_B_PIN 				GPIO_PIN_5
+#define SEVEN_SEG_B_GPIO_PORT 			GPIOA
 
-#define Seven_seg_c_Pin 				GPIO_PIN_6
-#define Seven_seg_c_GPIO_Port	 		GPIOA
+#define SEVEN_SEG_C_PIN 				GPIO_PIN_6
+#define SEVEN_SEG_C_GPIO_PORT	 		GPIOA
 
-#define Seven_seg_d_Pin 				GPIO_PIN_1
-#define Seven_seg_d_GPIO_Port 			GPIOB
+#define SEVEN_SEG_D_PIN 				GPIO_PIN_1
+#define SEVEN_SEG_D_GPIO_PORT 			GPIOB
 
-#define Seven_seg_e_Pin 				GPIO_PIN_2
-#define Seven_seg_e_GPIO_Port 			GPIOB
+#define SEVEN_SEG_E_PIN 				GPIO_PIN_2
+#define SEVEN_SEG_E_GPIO_PORT 			GPIOB
 
-#define Seven_seg_f_Pin 				GPIO_PIN_4
-#define Seven_seg_f_GPIO_Port 			GPIOA
+#define SEVEN_SEG_F_PIN 				GPIO_PIN_4
+#define SEVEN_SEG_F_GPIO_PORT 			GPIOA
 
-#define Seven_seg_g_Pin 				GPIO_PIN_7
-#define Seven_seg_g_GPIO_Port 			GPIOA
+#define SEVEN_SEG_G_PIN 				GPIO_PIN_7
+#define SEVEN_SEG_G_GPIO_PORT 			GPIOA
 
-#define Seven_seg_DP_Pin 				GPIO_PIN_0
-#define Seven_seg_DP_GPIO_Port 			GPIOB
+#define SEVEN_SEG_DP_PIN 				GPIO_PIN_0
+#define SEVEN_SEG_DP_GPIO_PORT 			GPIOB
 
-/* Enable Pin For SevenSegment*/
-#define Seven_seg_Enable_1_Pin 			GPIO_PIN_12
-#define Seven_seg_Enable_1_GPIO_Port 	GPIOB
+/* Enable Pin For Seven Segment*/
+#define SEVEN_SEG_ENABLE_1_PIN 			GPIO_PIN_12
+#define SEVEN_SEG_ENABLE_1_GPIO_PORT 	GPIOB
 
-#define Seven_seg_Enable_2_Pin 			GPIO_PIN_11
-#define Seven_seg_Enable_2_GPIO_Port 	GPIOA
+#define SEVEN_SEG_ENABLE_2_PIN 			GPIO_PIN_11
+#define SEVEN_SEG_ENABLE_2_GPIO_PORT 	GPIOA
 
-#define Seven_seg_Enable_3_Pin 			GPIO_PIN_13
-#define Seven_seg_Enable_3_GPIO_Port 	GPIOB
+#define SEVEN_SEG_ENABLE_3_PIN 			GPIO_PIN_13
+#define SEVEN_SEG_ENABLE_3_GPIO_PORT 	GPIOB
 
-#define Seven_seg_Enable_4_Pin 			GPIO_PIN_8
-#define Seven_seg_Enable_4_GPIO_Port 	GPIOA
+#define SEVEN_SEG_ENABLE_4_PIN 			GPIO_PIN_8
+#define SEVEN_SEG_ENABLE_4_GPIO_PORT 	GPIOA
 
-#define Seven_seg_Enable_5_Pin 			GPIO_PIN_15
-#define Seven_seg_Enable_5_GPIO_Port 	GPIOB
+#define SEVEN_SEG_ENABLE_5_PIN 			GPIO_PIN_15
+#define SEVEN_SEG_ENABLE_5_GPIO_PORT 	GPIOB
 
-#define Seven_seg_Enable_6_Pin 			GPIO_PIN_12
-#define Seven_seg_Enable_6_GPIO_Port 	GPIOA
+#define SEVEN_SEG_ENABLE_6_PIN 			GPIO_PIN_12
+#define SEVEN_SEG_ENABLE_6_GPIO_PORT 	GPIOA
 
-#define C_LED_Pin 			            GPIO_PIN_14
-#define C_LED_GPIO_Port 	            GPIOB
+#define COMMON_LED_PIN 			        GPIO_PIN_14
+#define COMMON_LED_GPIO_PORT 	        GPIOB
 
 /* Indicator LED */
 #define _IND_LED_PORT			        GPIOB
@@ -172,10 +172,11 @@ typedef enum {
 
 /* Led Indicator Type Definition */
 typedef enum{
-	Ind1=1,
-	Ind2,
-	Ind3,
-	Ind4,
+	INDICATOR_1=1,
+	INDICATOR_2,
+	INDICATOR_3,
+	INDICATOR_4,
+
 	OFF_LED=0x00,
 	ON_LED=0xFF
 } IndicatorLED;
