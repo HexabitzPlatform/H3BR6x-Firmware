@@ -1,5 +1,5 @@
 /*
- BitzOS (BOS) V0.3.6 - Copyright (C) 2017-2024 Hexabitz
+ BitzOS (BOS) V0.4.0 - Copyright (C) 2017-2025 Hexabitz
  All rights reserved
  
  File Name     : H3BR6.h
@@ -13,11 +13,11 @@
 
  */
 
-/* Define to prevent recursive inclusion -------------------------------------*/
+/* Define to prevent recursive inclusion ***********************************/
 #ifndef H3BR6_H
 #define H3BR6_H
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes ****************************************************************/
 #include "BOS.h"
 #include "H3BR6_MemoryMap.h"
 #include "H3BR6_uart.h"
@@ -25,40 +25,34 @@
 #include "H3BR6_dma.h"
 #include "H3BR6_inputs.h"
 #include "H3BR6_eeprom.h"
-/* Exported definitions -------------------------------------------------------*/
 
-#define	modulePN		_H3BR6
+/* Exported Macros *********************************************************/
+#define	MODULE_PN		_H3BR6
 
-
-/* Port-related definitions */
-#define	NumOfPorts			5
-
-#define P_PROG 				P2						/* ST factory bootloader UART */
+/* Port-related Definitions */
+#define	NUM_OF_PORTS	5
+#define P_PROG 			P2		/* ST factory bootloader UART */
 
 /* Define available ports */
-#define _P1 
-#define _P2 
-#define _P3 
-#define _P4 
-#define _P5 
+#define _P1
+#define _P2
+#define _P3
+#define _P4
+#define _P5
 
-
-/* Define available USARTs */
-#define _Usart1 1
-#define _Usart2 1
-#define _Usart3 1
-#define _Usart5 1
-#define _Usart6	1
-
+/* Define Available USARTs */
+#define _USART1
+#define _USART2
+#define _USART3
+#define _USART5
+#define _USART6
 
 /* Port-UART mapping */
-
-#define P1uart &huart6
-#define P2uart &huart2
-#define P3uart &huart3
-#define P4uart &huart1
-#define P5uart &huart5
-
+#define UART_P1 &huart6
+#define UART_P2 &huart2
+#define UART_P3 &huart3
+#define UART_P4 &huart1
+#define UART_P5 &huart5
 
 /* Port Definitions */
 #define	USART1_TX_PIN		GPIO_PIN_9
@@ -78,8 +72,6 @@
 #define	USART3_TX_PORT		GPIOB
 #define	USART3_RX_PORT		GPIOB
 #define	USART3_AF			GPIO_AF4_USART3
-
-
 
 #define	USART5_TX_PIN		GPIO_PIN_3
 #define	USART5_RX_PIN		GPIO_PIN_2
@@ -193,26 +185,10 @@ typedef enum{
 
 /* -------------------------------------------------------------------------------*\
  */
-extern uint8_t Res_it;
-extern uint8_t StartSevSeg_it;
-extern int Comma_flag;
 
 
 #define MOVING_SENTENCE_MAX_LENGTH 100
 #define MOVING_SENTENCE_COUNTER_OVERFLOW 95 // moving time: 300 ms (500 / 3.145)
-
-extern uint8_t  Moving_sentence_buffer[MOVING_SENTENCE_MAX_LENGTH + 6];
-extern uint8_t  Moving_sentence_length;
-extern uint8_t  Moving_sentence_flag;
-extern uint32_t Moving_sentence_counter;
-extern uint8_t  Moving_sentence_index;
-
-
-
-extern Segment_Codes Digit[7]; //Digit[0]: LSD, Digit[5]: MSD
-extern Segment_Codes get_number_code(uint8_t digit);
-extern Segment_Codes get_letter_code(char letter);
-extern Segment_Codes clear_all_digits(void);
 
 /* Indicator LED */
 #define _IND_LED_PORT			GPIOB
@@ -232,7 +208,6 @@ extern void MX_USART3_UART_Init(void);
 extern void MX_USART5_UART_Init(void);
 extern void MX_USART6_UART_Init(void);
 extern void SystemClock_Config(void);
-extern void ExecuteMonitor(void);
 
 /* -----------------------------------------------------------------------
  |								  APIs							          |  																 	|
@@ -249,21 +224,7 @@ extern Module_Status SetIndicator(IndicatorLED indicator );
 extern Module_Status ClearIndicator(IndicatorLED  indicator);
 
 void SetupPortForRemoteBootloaderUpdate(uint8_t port);
-void remoteBootloaderUpdate(uint8_t src,uint8_t dst,uint8_t inport,uint8_t outport);
-
-/* -----------------------------------------------------------------------
- |								Commands							      |															 	|
-/* -----------------------------------------------------------------------
- */
-extern const CLI_Command_Definition_t CLI_SevenDisplayNumberCommandCommandDefinition;
-extern const CLI_Command_Definition_t CLI_SevenDisplayNumberFCommandDefinition;
-extern const CLI_Command_Definition_t CLI_SevenDisplayQuantitiesCommandDefinition;
-extern const CLI_Command_Definition_t CLI_SevenDisplayLetterCommandDefinition;
-extern const CLI_Command_Definition_t CLI_SevenDisplaySentanceCommandDefinition;
-extern const CLI_Command_Definition_t CLI_SevenDisplayMovingSentanceCommandDefinition;
-extern const CLI_Command_Definition_t CLI_SevenDisplayOffCommandDefinition;
-
-
+void RemoteBootloaderUpdate(uint8_t src,uint8_t dst,uint8_t inport,uint8_t outport);
 
 #endif /* H3BR6_H */
 
