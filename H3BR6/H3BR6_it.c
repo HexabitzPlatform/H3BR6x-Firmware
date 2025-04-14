@@ -18,6 +18,7 @@ extern uint8_t WakeupFromStopFlag;
 extern uint8_t UARTRxBuf[NUM_OF_PORTS][MSG_RX_BUF_SIZE];
 extern TaskHandle_t xCommandConsoleTaskHandle; /* CLI Task handler */
 
+extern TIM_HandleTypeDef htim6; /* Timer for 7-segment (6 peices) */
 /* Local Variables *********************************************************/
 uint16_t PacketLength =0;
 uint8_t Count =0;
@@ -43,6 +44,11 @@ void HardFault_Handler(void){
 	NVIC_SystemReset();
 	for(;;){
 	};
+}
+
+/***************************************************************************/
+void TIM6_DAC_LPTIM1_IRQHandler(void){
+	HAL_TIM_IRQHandler(&htim6);
 }
 
 /***************************************************************************/

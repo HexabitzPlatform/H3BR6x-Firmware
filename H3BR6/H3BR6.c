@@ -30,12 +30,15 @@ SegmentCodes Digit[7] ={Empty};   /* Digit[0]: LSD, Digit[6]: MSD */
 IndicatorLED LedStatus =OFF_LED;
 IndicatorLED OldLedStatus =ON_LED;
 
+extern TIM_HandleTypeDef htim6; /* Timer for 7-segment (6 peices) */
+
 /* Module Parameters */
 ModuleParam_t ModuleParam[NUM_MODULE_PARAMS] ={0};
 
 /* Private variables ---------------------------------------------------------*/
 uint8_t CommaIndex;     /* A global variable to specify the index of the comma */
 uint8_t StartSevSeg;
+uint8_t SevenSegIndex = 0;
 uint8_t MovingSentenceFlag = 0;
 uint8_t MovingSentenceIndex = 0;
 uint8_t MovingSentenceLength = 0;
@@ -711,6 +714,98 @@ Module_Status GetModuleParameter(uint8_t paramIndex,float *value){
 
 /***************************************************************************/
 /****************************** Local Functions ****************************/
+/***************************************************************************/
+/* */
+/***************************************************************************/
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+
+	if(htim == &htim6){
+		HAL_GPIO_WritePin(SEVEN_SEG_ENABLE_1_GPIO_PORT,SEVEN_SEG_ENABLE_1_PIN,GPIO_PIN_SET);
+		HAL_GPIO_WritePin(SEVEN_SEG_ENABLE_2_GPIO_PORT,SEVEN_SEG_ENABLE_2_PIN,GPIO_PIN_SET);
+		HAL_GPIO_WritePin(SEVEN_SEG_ENABLE_3_GPIO_PORT,SEVEN_SEG_ENABLE_3_PIN,GPIO_PIN_SET);
+		HAL_GPIO_WritePin(SEVEN_SEG_ENABLE_4_GPIO_PORT,SEVEN_SEG_ENABLE_4_PIN,GPIO_PIN_SET);
+		HAL_GPIO_WritePin(SEVEN_SEG_ENABLE_5_GPIO_PORT,SEVEN_SEG_ENABLE_5_PIN,GPIO_PIN_SET);
+		HAL_GPIO_WritePin(SEVEN_SEG_ENABLE_6_GPIO_PORT,SEVEN_SEG_ENABLE_6_PIN,GPIO_PIN_SET);
+		HAL_GPIO_WritePin(COMMON_LED_GPIO_PORT,COMMON_LED_PIN,GPIO_PIN_SET);
+
+		HAL_GPIO_WritePin(SEVEN_SEG_A_GPIO_PORT,SEVEN_SEG_A_PIN,Digit[SevenSegIndex] & 0b00000001);
+		HAL_GPIO_WritePin(SEVEN_SEG_B_GPIO_PORT,SEVEN_SEG_B_PIN,Digit[SevenSegIndex] & 0b00000010);
+		HAL_GPIO_WritePin(SEVEN_SEG_C_GPIO_PORT,SEVEN_SEG_C_PIN,Digit[SevenSegIndex] & 0b00000100);
+		HAL_GPIO_WritePin(SEVEN_SEG_D_GPIO_PORT,SEVEN_SEG_D_PIN,Digit[SevenSegIndex] & 0b00001000);
+		HAL_GPIO_WritePin(SEVEN_SEG_E_GPIO_PORT,SEVEN_SEG_E_PIN,Digit[SevenSegIndex] & 0b00010000);
+		HAL_GPIO_WritePin(SEVEN_SEG_F_GPIO_PORT,SEVEN_SEG_F_PIN,Digit[SevenSegIndex] & 0b00100000);
+		HAL_GPIO_WritePin(SEVEN_SEG_G_GPIO_PORT,SEVEN_SEG_G_PIN,Digit[SevenSegIndex] & 0b01000000);
+		HAL_GPIO_WritePin(SEVEN_SEG_DP_GPIO_PORT,SEVEN_SEG_DP_PIN,0);
+
+		if(SevenSegIndex == StartSevSeg + CommaIndex && CommaFlag == 1){
+			HAL_GPIO_WritePin(SEVEN_SEG_DP_GPIO_PORT,SEVEN_SEG_DP_PIN,1);
+		}
+
+		switch(SevenSegIndex){
+			case 0:
+				HAL_GPIO_WritePin(SEVEN_SEG_ENABLE_1_GPIO_PORT,SEVEN_SEG_ENABLE_1_PIN,GPIO_PIN_RESET);
+				break;
+
+			case 1:
+				HAL_GPIO_WritePin(SEVEN_SEG_ENABLE_2_GPIO_PORT,SEVEN_SEG_ENABLE_2_PIN,GPIO_PIN_RESET);
+				break;
+
+			case 2:
+				HAL_GPIO_WritePin(SEVEN_SEG_ENABLE_3_GPIO_PORT,SEVEN_SEG_ENABLE_3_PIN,GPIO_PIN_RESET);
+				break;
+
+			case 3:
+				HAL_GPIO_WritePin(SEVEN_SEG_ENABLE_4_GPIO_PORT,SEVEN_SEG_ENABLE_4_PIN,GPIO_PIN_RESET);
+				break;
+
+			case 4:
+				HAL_GPIO_WritePin(SEVEN_SEG_ENABLE_5_GPIO_PORT,SEVEN_SEG_ENABLE_5_PIN,GPIO_PIN_RESET);
+				break;
+
+			case 5:
+				HAL_GPIO_WritePin(SEVEN_SEG_ENABLE_6_GPIO_PORT,SEVEN_SEG_ENABLE_6_PIN,GPIO_PIN_RESET);
+				break;
+
+			case 6:
+				HAL_GPIO_WritePin(COMMON_LED_GPIO_PORT,COMMON_LED_PIN,GPIO_PIN_RESET);
+				HAL_GPIO_WritePin(SEVEN_SEG_DP_GPIO_PORT,SEVEN_SEG_DP_PIN,Digit[6] & 0b10000000);
+				break;
+
+			default:
+				break;
+
+		}
+
+		SevenSegIndex++;
+
+		if(SevenSegIndex > 7)
+			SevenSegIndex =0;
+
+		/* Processing Moving sentence */
+		if(MovingSentenceFlag == 1){
+
+			MovingSentenceCounter++;
+
+			if(MovingSentenceCounter == MOVING_SENTENCE_COUNTER_OVERFLOW){
+				MovingSentenceCounter =0;
+				uint8_t temp;
+				for(int i =0; i < 6; i++){
+					temp =MovingSentenceIndex + i;
+					if(temp == MovingSentenceLength){
+						temp -=MovingSentenceLength;
+					}
+					Digit[5 - i] =MovingSentenceBuffer[temp];
+				}
+				MovingSentenceIndex++;
+				if(MovingSentenceIndex == MovingSentenceLength){
+					MovingSentenceIndex =0;
+				}
+			}
+
+		}
+	}
+}
+
 /***************************************************************************/
 SegmentCodes GetNumberCode(uint8_t digit){
 	Module_Status status =H3BR6_OK;
