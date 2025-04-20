@@ -86,7 +86,6 @@
 #define	USART6_RX_PORT		GPIOB
 #define	USART6_AF			GPIO_AF8_USART6
 
-/* Module-specific Hardware Definitions */
 /* Pins For Seven Segment*/
 #define SEVEN_SEG_A_PIN 				GPIO_PIN_1
 #define SEVEN_SEG_A_GPIO_PORT 			GPIOA

@@ -6632,16 +6632,16 @@ LOAD C:/ST/STM32CubeIDE_1.17.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.ext
                 0x200026c0                huart6
                 0x20002754                Digit
                 0x2000275b                LedStatus
-                0x2000275c                ModuleParam
-                0x20002768                CommaIndex
-                0x20002769                StartSevSeg
-                0x2000276a                SevenSegIndex
-                0x2000276b                MovingSentenceFlag
-                0x2000276c                MovingSentenceIndex
-                0x2000276d                MovingSentenceLength
-                0x20002770                MovingSentenceBuffer
-                0x200027dc                MovingSentenceCounter
-                0x200027e0                CommaFlag
+                0x2000275c                CommaIndex
+                0x2000275d                StartSevSeg
+                0x2000275e                SevenSegIndex
+                0x2000275f                MovingSentenceFlag
+                0x20002760                MovingSentenceIndex
+                0x20002761                MovingSentenceLength
+                0x20002764                MovingSentenceBuffer
+                0x200027d0                MovingSentenceCounter
+                0x200027d4                CommaFlag
+                0x200027d8                ModuleParam
  .bss           0x20002824       0x8c H3BR6\H3BR6_dma.o
                 0x20002874                UARTDMAHandler
                 0x2000288c                hcrc

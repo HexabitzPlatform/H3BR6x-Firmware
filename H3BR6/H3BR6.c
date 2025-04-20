@@ -17,7 +17,7 @@
 #include "BOS.h"
 #include "H3BR6_inputs.h"
 
-/* Exported Typedef ******************************************************/
+/* Exported Typedef ********************************************************/
 /* Define UART variables */
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
@@ -32,10 +32,7 @@ IndicatorLED OldLedStatus =ON_LED;
 
 extern TIM_HandleTypeDef htim6; /* Timer for 7-segment (6 peices) */
 
-/* Module Parameters */
-ModuleParam_t ModuleParam[NUM_MODULE_PARAMS] ={0};
-
-/* Private variables ---------------------------------------------------------*/
+/* Private variables *******************************************************/
 uint8_t CommaIndex;     /* A global variable to specify the index of the comma */
 uint8_t StartSevSeg;
 uint8_t SevenSegIndex = 0;
@@ -45,6 +42,9 @@ uint8_t MovingSentenceLength = 0;
 uint8_t MovingSentenceBuffer[MOVING_SENTENCE_MAX_LENGTH + 6] = {0};
 uint32_t MovingSentenceCounter = 0;
 int CommaFlag=0;        /* Activate a flag when a float number is shown */
+
+/* Module Parameters */
+ModuleParam_t ModuleParam[NUM_MODULE_PARAMS] ={0};
 
 /* Private function prototypes *********************************************/
 void MX_TIM6_Init(void);
@@ -693,10 +693,9 @@ void RegisterModuleCLICommands(void){
 
 /***************************************************************************/
 /* This functions is useful only for input (sensors) modules.
- * @brief: Samples a module parameter value based on parameter index.
- * @param paramIndex: Index of the parameter (1-based index).
- * @param value: Pointer to store the sampled float value.
- * @retval: Module_Status indicating success or failure.
+ * Samples a module parameter value based on parameter index.
+ * paramIndex: Index of the parameter (1-based index).
+ * value: Pointer to store the sampled float value.
  */
 Module_Status GetModuleParameter(uint8_t paramIndex,float *value){
 	Module_Status status =BOS_OK;
