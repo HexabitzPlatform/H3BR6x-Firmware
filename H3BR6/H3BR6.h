@@ -218,9 +218,6 @@ Module_Status SevenDisplayOff(void);
 Module_Status SetIndicator(IndicatorLED indicator );
 Module_Status ClearIndicator(IndicatorLED  indicator);
 
-void SetupPortForRemoteBootloaderUpdate(uint8_t port);
-void RemoteBootloaderUpdate(uint8_t src,uint8_t dst,uint8_t inport,uint8_t outport);
-
 #endif /* H3BR6_H */
 
 /***************** (C) COPYRIGHT HEXABITZ ***** END OF FILE ****************/
