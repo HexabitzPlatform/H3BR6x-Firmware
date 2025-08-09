@@ -172,17 +172,16 @@ typedef enum{
 	INDICATOR_3,
 	INDICATOR_4,
 
-	OFF_LED=0x00,
-	ON_LED=0xFF
+    OFF_LED=0x00,
+    ON_LED=0xFF
 } IndicatorLED;
 
 /* Module-status Type Definition */
 typedef enum {
 	H3BR6_OK =0,
-	H3BR6_ERR_UnknownMessage,
-	H3BR6_ERR_WrongParams,
-	H3BR6_NUMBER_IS_OUT_OF_RANGE, // Longer than 6 Digits
-	H3BR6_Out_Of_Range,
+	H3BR6_ERR_UNKNOWNMESSAGE,
+	H3BR6_ERR_WRONGPARAMS,
+	H3BR6_OUT_OF_RANGE,
 	H3BR6_ERROR =255
 } Module_Status;
 
@@ -204,13 +203,11 @@ extern void SystemClock_Config(void);
 /***************************************************************************/
 /***************************** General Functions ***************************/
 /***************************************************************************/
-Module_Status SevenDisplayNumber(int32_t Number, uint8_t StartSevSeg);
-Module_Status SevenDisplayNumberF(float NumberF,uint8_t Res,uint8_t StartSevSeg);
-Module_Status SevenDisplayQuantities(float NumberF, uint8_t Res,char Unit ,uint8_t StartSevSeg);
-Module_Status SevenDisplayLetter(char letter , uint8_t StartSevSeg);
-Module_Status SevenDisplaySentence(char *Sentance,uint16_t length,uint8_t StartSevSeg);
-Module_Status SevenDisplayMovingSentence(char *Sentance,uint16_t length);
-Module_Status SevenDisplayOff(void);
+Module_Status DisplayNumber(float Number,uint8_t Res,uint8_t StartSevSeg);
+Module_Status DisplayQuantities(float Number, uint8_t Res,char Unit ,uint8_t StartSevSeg);
+Module_Status DisplaySentence(char *Sentance,uint16_t length,uint8_t StartSevSeg);
+Module_Status DisplayMovingSentence(char *Sentance,uint16_t length);
+Module_Status DisplayOff(void);
 Module_Status SetIndicator(IndicatorLED indicator );
 Module_Status ClearIndicator(IndicatorLED  indicator);
 
